@@ -25,6 +25,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import kotlin.math.roundToInt
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -44,11 +45,25 @@ fun ExtractionSheet(
             verticalArrangement = Arrangement.spacedBy(14.dp),
         ) {
             if (!state.done) {
-                Text(
-                    "Extracting…",
-                    style = MaterialTheme.typography.titleLarge,
-                    fontWeight = FontWeight.Bold,
-                )
+                val overall = ((state.completed + state.fraction) / state.total.coerceAtLeast(1))
+                    .coerceIn(0f, 1f)
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically,
+                ) {
+                    Text(
+                        "Extracting…",
+                        style = MaterialTheme.typography.titleLarge,
+                        fontWeight = FontWeight.Bold,
+                    )
+                    Text(
+                        "${(overall * 100).roundToInt()}%",
+                        style = MaterialTheme.typography.titleLarge,
+                        fontWeight = FontWeight.ExtraBold,
+                        color = MaterialTheme.colorScheme.primary,
+                    )
+                }
                 Text(
                     state.currentLabel,
                     style = MaterialTheme.typography.bodyMedium,
@@ -57,7 +72,7 @@ fun ExtractionSheet(
                     overflow = TextOverflow.Ellipsis,
                 )
                 LinearProgressIndicator(
-                    progress = { state.fraction },
+                    progress = { overall },
                     modifier = Modifier.fillMaxWidth(),
                 )
                 Text(

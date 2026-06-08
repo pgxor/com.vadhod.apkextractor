@@ -6,6 +6,44 @@
 
 ---
 
+## 2026-06-08 — Phases 2–6: full pastel UI, extraction UX, details, release hardening
+
+**Built the whole app on top of the Phase-1 engine:**
+- **Design system** (`core/design`): Anthropic/Claude pastel palette (`PastelColors`, light + dim
+  dark M3 schemes), **Nunito** bundled variable font (`res/font/nunito.ttf`, weights via
+  FontVariation), `AppShapes`, `Gradients` (+`LocalAppGradients`), `VadhodTheme`. Components:
+  `GradientBackground`, `AppIcon` (Coil), `PillTabs`, `SearchField`, `AppListItem`, `Pill`,
+  loading/empty states.
+- **Coil 3 icon loading:** `AppIconFetcher`/`Keyer` + `App`/`AppContainer` (manual DI, Coil
+  `SingletonImageLoader.Factory`, offline icons from PackageManager).
+- **Feature/applist:** `AppListViewModel` (search, sort w/ persistence, multi-select, batch extract
+  with per-item + overall progress), `AppListScreen` (two pill tabs, FAB, sort menu), `ExtractionSheet`
+  (live **%** + overall progress bar + per-app results).
+- **Feature/detail:** metadata, signing SHA-256, APK contents (zip entries), Extract base/bundle,
+  Share, Export icon.
+- **Feature/settings:** theme mode, bundle-splits default, export folder picker, about/license.
+- **MainActivity/AppRoot:** splash, theme, state-based nav (List/Detail/Settings), SAF
+  `OpenDocumentTree` + `CreateDocument` launchers, FileProvider share, BackHandler.
+- **Manifest hardening:** `android:name=".App"`, `allowBackup=false`, FileProvider (not exported,
+  `file_paths.xml` cache/shared only). Still **no INTERNET** (guardrail passes).
+- **Release/R8:** `isMinifyEnabled`+`isShrinkResources` on; `proguard-rules.pro`. `assembleRelease`
+  BUILD SUCCESSFUL (R8 clean). material-icons-extended added (BOM-governed; R8 strips unused in
+  release) — documented reversal in `libraries-used.md`.
+
+**Verification (device: moto g45 5G / Android 15):** debug build installed, launched, **resumed**,
+process healthy, **no exceptions** — logs show it actively reading installed APK assets (icons +
+listing working). **T-011 on-device listing confirmed.** `assembleDebug`, `assembleRelease`,
+`testDebugUnitTest` all green.
+
+**Outstanding (honest):** custom pastel **app launcher icon** still the scaffold default (T-055);
+**UI strings not yet externalized** to `strings.xml` (T-066, rules.md §D-23); crossfade nav motion
+minimal (T-053); accessibility audit not formalized (T-060). None block usage.
+
+**Re-test pending:** added live **%** to extraction sheet + overall-progress bar; rebuilt OK but
+wireless adb dropped before reinstall — needs device reconnect to push the updated debug APK.
+
+---
+
 ## 2026-06-08 — Phase 0 complete + Phase 1 core engine implemented & tested
 
 **Phase 0 (foundations) — DONE:**

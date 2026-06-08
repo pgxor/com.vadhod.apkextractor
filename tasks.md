@@ -8,6 +8,13 @@
 > Phases: **0** Foundations → **1** Data/core (correctness) → **2** UI shell & list → **3** Extract
 > UX → **4** Details/inspect → **5** Pastel polish → **6** Hardening/release.
 
+> **STATUS 2026-06-08:** Phases 0–4 ✅. Phase 2 (theme/shell/list, T-020–025) ✅; Phase 3 (SAF
+> picker, single + batch extract, share, T-030–033) ✅; Phase 4 (details, inspector, icon export,
+> T-040–042) ✅. Phase 5 mostly ✅ (palette/gradients/cards/empty-states/settings) — **open: custom
+> app icon T-055, richer motion T-053.** Phase 6 partial — **R8 release ✅ (T-062), manifest
+> hardening ✅ (T-063), no-internet guardrail ✅ (T-064)**; **open: string externalization T-066,
+> accessibility audit T-060, lockfiles T-002.** App verified running + listing apps on device.
+
 ## Phase 0 — Foundations & tooling
 - ✅ **T-001** Apply dependency additions to `gradle/libs.versions.toml` with `strictly` pins; wire
   `implementation(...)` in `app/build.gradle.kts`. *Verified 2026-06-08:* `assembleDebug` green; all
