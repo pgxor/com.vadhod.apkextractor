@@ -45,6 +45,29 @@ category.
 | UI toolkit | Jetpack Compose + Material 3, custom pastel theme. |
 | Architecture | Single-Activity, **MVVM + unidirectional data flow (UDF)**, repository pattern. |
 
+### 3.1 Decisions from `questionnaire.md` (answered 2026-06-08)
+
+| Q | Topic | Decision |
+|---|---|---|
+| Q1 | App name | **"Vadhod APK Extractor"** (package stays `com.vadhod.apkextractor`). |
+| Q2/Q3 | Palette | **Anthropic / Claude website palette** — warm ivory surfaces, clay/coral accent, kraft tan, manilla, soft sage, warm charcoal ink (see §8). |
+| Q4 | Dark mode | **Light + "dim pastel" dark** (warm charcoal), both polished. |
+| Q5 | Dynamic color | **No** — fixed brand palette, no Material You toggle. |
+| Q6 | Typeface | **Bundled rounded font — Nunito** (offline asset). |
+| Q7 | App icon | Propose 2–3 pastel-gradient concepts (Phase 5, T-055). |
+| Q8 | Package visibility | **`QUERY_ALL_PACKAGES`** — list everything. |
+| Q9 | Split default | **Bundle `.apks`** by default, base-only optional. |
+| Q10 | Bundle extension | **`.apks`**. |
+| Q11 | Sort | Default **Name A–Z**; expose **all** `SortOrder` options. |
+| Q12 | minSdk | **29** (Android 10) — confirmed (minSdk 10 infeasible with Compose). |
+| Q13 | Filename | `<AppLabel>_<versionName>_<versionCode>.apk` (sanitized). |
+| Q14 | Icon export | **Yes** (PNG via SAF). |
+| Q15 | Inspector depth | Zip entries + signing **SHA-256** + manifest summary. |
+| Q16 | License | **GPL-3.0** (F-Droid-friendly; change on request). |
+| Q17 | Distribution | **Play Store + GitHub Releases + F-Droid** (Play needs `QUERY_ALL_PACKAGES` justification). |
+| Q18 | Language | **English** v1 + localization scaffolding. |
+| Q19/Q20 | Other | Prioritize great UI; no extra constraints. |
+
 ## 4. Tech stack (see `libraries-used.md` for pinned versions)
 
 - **Language:** Kotlin 2.4.0 (K2), coroutines + Flow.
@@ -163,26 +186,30 @@ sealed interface ExtractResult {
 
 ## 8. Design system — "very soft pastel" (the headline feature)
 
-> Goal: dreamy, calm, premium. Soft pastels, gentle gradients, generous whitespace, large rounded
-> corners, soft shadows, subtle motion. Concrete hex values are **proposals** pending
-> `questionnaire.md` Q2–Q4; the *structure* below is the contract.
+> Goal: dreamy, calm, premium — the warm, soft, paper-and-clay aesthetic of the **Anthropic / Claude
+> website**, expressed as pastel. Gentle gradients, generous whitespace, large rounded corners, soft
+> shadows, subtle motion. Hex values below are the **starting palette**; we tune for AA contrast in
+> T-050. The *structure* (palette → M3 roles → tokens → components) is the contract.
 
-- **Color approach:** a hand-tuned pastel palette mapped onto **Material 3 color roles** (so all M3
-  components inherit it). Optional Material You **dynamic color** as a user toggle (off by default to
-  preserve the signature pastel identity — confirm in Q3).
-- **Proposed pastel seed palette (light):**
-  - Lavender `#E9E3FB` / Lavender-deep `#CDBDF2`
-  - Sky `#DCEBFB` / Mint `#DCF4E8` / Peach `#FCE7D9` / Blush `#FBE1EE` / Butter `#FBF3D9`
-  - Surface `#FBFAFF` (near-white, faint violet tint), On-surface `#3B3656` (soft desaturated ink — never pure black).
-- **Gradients:** very low-contrast, 2–3 stop linear/diagonal brushes (e.g. Lavender→Sky,
-  Peach→Blush). Used for the app background, the extract FAB, tab indicator, and card accents.
-  Defined once in `design/color/Gradients.kt` as `Brush` factories; **never** hard-coded per screen.
-- **Dark theme:** "dim pastel" — deep desaturated indigo/charcoal surfaces (`#15131F`) with the same
-  hues at low chroma so it stays soft, not neon. (Confirm dark-mode appetite in Q4.)
-- **Shape:** large corner radii (cards 24–28dp, sheets 28dp, buttons full/20dp pill). Tabs are
+- **Color approach:** the Anthropic/Claude palette mapped onto **Material 3 color roles** (so all M3
+  components inherit it). **No Material You / dynamic color** (Q5 = no) — the brand palette is fixed
+  and signature.
+- **Anthropic/Claude pastel palette (light):**
+  - Surface / background **Ivory** `#FAF9F5`; secondary surface **Paper** `#F0EEE6`; card `#FFFFFF` with warm tint.
+  - **Primary accent — Clay/Coral** `#D97757` (the Claude accent); pressed/deep **Book-cloth** `#CC785C`.
+  - **Secondary — Kraft tan** `#D4A27F`; **Tertiary — Manilla** `#EBDBBC`.
+  - **Sage** `#C2D2C7` (soft green, success/positive accents).
+  - **Ink / on-surface** warm charcoal `#3D3D3A`; strong text `#1F1E1D` (never pure black).
+  - **Muted text** `#73726C`; hairlines/outline `#E3E1D9`.
+- **Gradients:** very low-contrast, 2–3 stop linear/diagonal `Brush`es in-palette (e.g.
+  Ivory→Paper background wash, Clay→Kraft on the extract FAB, Manilla→Sage card accents). Defined
+  once in `design/color/Gradients.kt` as factories; **never** hard-coded per screen.
+- **Dark theme:** "dim pastel" — warm charcoal surfaces (`#1F1E1D` / `#262624` / `#30302E`) with the
+  clay accent kept warm (`#D97757`) and low-chroma tan/sage so it stays soft, not neon. On-dark text
+  `#F0EEE6`.
+- **Shape:** large corner radii (cards 24–28dp, sheets 28dp, buttons full/20dp pill). Tabs are a
   **pill-style** segmented control.
-- **Type:** rounded, friendly typeface (proposal: *Nunito* / *Quicksand* bundled offline, or system
-  default). Confirm in Q5. Clear M3 type scale.
+- **Type:** **Nunito** (Q6) — rounded, friendly, bundled offline as a font resource. Clear M3 type scale.
 - **Motion:** gentle—crossfades, shared-element-ish detail transition, springy FAB, shimmer
   placeholders while icons/sizes load. Respect "reduce motion" accessibility setting.
 - **Elevation:** soft, diffuse shadows / subtle translucency (frosted "glass" cards) rather than hard

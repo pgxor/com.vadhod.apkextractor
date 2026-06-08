@@ -2,6 +2,15 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools">
 
+    <!--
+      Core function is enumerating installed apps to extract their APKs, so we need to see all
+      packages (questionnaire Q8). OFFLINE-ONLY: no INTERNET / network permissions are declared
+      (rules.md §A, guardrail: NoInternetPermissionTest). Storage is handled via SAF only — no
+      READ/WRITE/MANAGE_EXTERNAL_STORAGE.
+    -->
+    <uses-permission android:name="android.permission.QUERY_ALL_PACKAGES"
+        tools:ignore="QueryAllPackagesPermission" />
+
     <application
         android:allowBackup="true"
         android:dataExtractionRules="@xml/data_extraction_rules"

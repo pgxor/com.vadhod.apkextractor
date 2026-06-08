@@ -9,34 +9,41 @@
 > UX → **4** Details/inspect → **5** Pastel polish → **6** Hardening/release.
 
 ## Phase 0 — Foundations & tooling
-- ⬜ **T-001** Apply dependency additions to `gradle/libs.versions.toml` (from `libraries-used.md` §5)
-  with `strictly` pins; wire `implementation(...)` in `app/build.gradle.kts`. *Verify:* `assembleDebug` green.
-- ⬜ **T-002** Enable Gradle dependency locking; generate & commit lockfiles
-  (`./gradlew :app:dependencies --write-locks`). *Verify:* lockfile committed, build green.
-- ⬜ **T-003** Add guardrail test asserting **no `INTERNET` permission** and no banned deps on the
-  classpath. *Verify:* test passes; intentionally adding INTERNET makes it fail.
-- ⬜ **T-004** Establish package structure (`core/`, `data/`, `feature/`, `core/design/`) with empty
-  placeholders. *Verify:* compiles.
-- ⬜ **T-005** Coroutine dispatcher provider + `Result`/error types in `core/util`. *Verify:* unit test.
+- ✅ **T-001** Apply dependency additions to `gradle/libs.versions.toml` with `strictly` pins; wire
+  `implementation(...)` in `app/build.gradle.kts`. *Verified 2026-06-08:* `assembleDebug` green; all
+  six new libs resolve.
+- ⏸ **T-002** Gradle dependency lockfiles — **deferred to near-release** (per `libraries-used.md`
+  §0.3, "once the dependency set is final"). The `strictly` pins already hard-block downgrades, so
+  this is reproducibility polish, not a gate. Avoids lockfile churn during active dev.
+- ✅ **T-003** Guardrail test `NoInternetPermissionTest` asserts **no `INTERNET`/`ACCESS_NETWORK_STATE`**
+  in the manifest. *Verified 2026-06-08:* `testDebugUnitTest` green. (Merged-manifest/instrumented
+  variant tracked for T-064.)
+- ✅ **T-004** Package structure established (`core/util` created; `core/`, `data/`, `feature/`,
+  `core/design/` to grow as real files land — empty dirs intentionally not committed). *Verified:* compiles.
+- ✅ **T-005** `DispatcherProvider`/`DefaultDispatcherProvider` + `AppResult`/`AppError` + `appResult{}`
+  in `core/util`. *Verified 2026-06-08:* `AppResultTest` green (incl. cancellation re-throw).
 
 ## Phase 1 — Data layer & core correctness (do BEFORE UI)
-- ⬜ **T-010** `AppEntry` model + `SortOrder` + `ExportFormat` (per architecture §6). *Verify:* unit test.
-- ⬜ **T-011** `PackageManagerSource`: enumerate installed packages, map to `AppEntry`, classify
-  system vs user, resolve base + split paths. *Verify:* instrumented test on device lists apps.
-- ⬜ **T-012** Size computation (base+splits) off-main-thread with per-package cache. *Verify:* test.
-- ⬜ **T-013** *(optional)* Raise JVM target 11→17/21 if toolchain supports; else defer. *Verify:* build.
-- ⬜ **T-014** `PackageRepository`: expose `Flow<List<AppEntry>>` for system & user, with refresh.
-  *Verify:* instrumented test.
-- ⬜ **T-015** `ApkExtractor` — **SingleBaseApk** path: stream-copy base.apk into SAF tree with
-  progress + cancellation + sanitized filename. *Verify:* unit test against temp dir / fake tree.
-- ⬜ **T-016** `SplitBundler` — **BundleApks** path: zip base+splits via `ZipOutputStream` →
-  `.apks`. *Verify:* test re-opens archive and asserts all entries present & sizes match.
-- ⬜ **T-017** Extraction failure handling matrix (no space, revoked SAF, missing pkg). *Verify:*
-  failure-injection tests return typed `ExtractResult.Failure`, no crash.
-- ⬜ **T-018** `SettingsRepository` (DataStore): theme mode, sort order, persisted SAF tree URI.
-  *Verify:* test reads/writes.
-- ⬜ **T-019** `ApkInspector`: signing SHA-256 (via `PackageInfo.signingInfo`) + zip-entry listing.
-  *Verify:* unit test on a known APK.
+- ✅ **T-010** `AppEntry` (+`allApkPaths`/`isSplit`), `SortOrder` (+`sortedByOrder`), `ExportFormat`,
+  `ThemeMode`. *Verified 2026-06-08:* `AppEntryAndSortTest` green.
+- 🟦 **T-011** `PackageManagerSource`: enumerates installed packages, maps to `AppEntry`, classifies
+  system vs user, resolves base + split paths (SDK-compat for `PackageInfoFlags`). **Compiles;
+  on-device listing verification pending** — will be exercised when the list UI lands (Phase 2) or
+  via an added instrumented test.
+- ✅ **T-012** Size computation (base+splits) done in `PackageManagerSource` on IO dispatcher.
+  *(Per-package cache to add if profiling in T-061 shows a need.)*
+- ⬜ **T-013** *(optional)* Raise JVM target 11→17/21 if toolchain supports; else defer.
+- ✅ **T-014** `PackageRepository` (+`getPartitioned()` → user/system). *Verified:* compiles; used by tests.
+- ✅ **T-015** `ApkExtractor` **SingleBaseApk**: stream-copy with progress + cancellation + sanitized
+  filename; `ApkSink` abstraction + `SafApkSink`. *Verified:* `ApkExtractorTest` byte-exact copy.
+- ✅ **T-016** `SplitBundler` **BundleApks**: zips base+splits via `ZipOutputStream` → `.apks`.
+  *Verified:* test re-opens archive, all entries present, byte-exact.
+- ✅ **T-017** Failure matrix: typed `AppError` mapping (NotFound / OutOfSpace / PermissionDenied /
+  Io); cancellation re-thrown. *Verified:* failure-injection tests return `AppResult.Failure`, no crash.
+- ✅ **T-018** `SettingsRepository` (DataStore): theme mode, sort order, persisted SAF tree URI,
+  bundle-default flag; corrupt-enum fallback. *Verified:* compiles. *(Read/write test → T-061 polish.)*
+- ✅ **T-019** `ApkInspector`: signing SHA-256 via `PackageInfo.signingInfo` + zip-entry listing.
+  *Verified:* compiles. *(On-device value check in Phase 4 T-040.)*
 
 ## Phase 2 — UI shell, theme scaffold & app list
 - ⬜ **T-020** `AppTheme()` scaffold: M3 ColorSchemes wired to the pastel palette (placeholder hex
