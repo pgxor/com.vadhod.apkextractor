@@ -1,0 +1,58 @@
+
+
+
+I would like to create a very detailed "apk extractor" android app like that is secure, open source, priviate, privacy frist and has offline mode only
+
+
+core functionality should be solid, after that ui is main foucs, it should be visually stunning and should use moust best graphic design practices that make this app visually most good looking and appealing, we want to use very very soft pastel color, very very soft pastel gradients.
+
+there should be two tabs for system app and nonormal apps.
+
+this need to be though in detailed so if you need to prepare questionire for me to better more detailed app, i'll fill that gladly, create md for that if required.
+
+----
+
+for your refrence and to give you massive boost i have sorce code of 2 such apps so that u can study thier architechute and tech stach and libraries etc they use
+
+they are for your refrence only we have to create our own app: C:\Projects\com.vadhod.apkextractor\DATA\SAI-master and C:\Projects\com.vadhod.apkextractor\DATA\apkExtractor-master and C:\Projects\com.vadhod.apkextractor\DATA\APK-Explorer-Editor-master
+
+---
+
+another major requirement for me is we need to use stable but most updated and latest version of all the libarires you are going to use and write to libraries-used.md.
+
+due to your cutooff knpldge date u use old outdated code version and coding practices and ignore all new updates, api changes and new functions they have bought. so first make list of all libaries u want, go online, find thier most latest, updated stable version, search its alternative and use most best one, and lockit so that it cant be downgraded later.
+
+---
+
+please create a very detailed
+
+1. architechute.md
+2. todo.md
+3. rules.md
+4. progress.md
+5. tasks.md
+6. libraries-used.md (we detaily document all the libraries we use and thier versions and release dates as per internet so that no model trys to downgrade it later)
+
+so that our coding sessions can be detailedly documented, what all has been done can be known and tested and we can more ahead and not try to do all at once and fail
+
+---
+
+
+PS C:\Projects\com.vadhod.apkextractor> ./gradlew assembleDebug
+Reusing configuration cache.
+
+BUILD SUCCESSFUL in 4s
+36 actionable tasks: 36 up-to-date
+Configuration cache entry reused.
+PS C:\Projects\com.vadhod.apkextractor> 
+
+PS C:\Projects\com.vadhod.apkextractor> adb devices
+* daemon not running; starting now at tcp:5037
+* daemon started successfully
+List of devices attached
+
+PS C:\Projects\com.vadhod.apkextractor> adb devices
+List of devices attached
+adb-ZD222NX2DM-YuHGqi._adb-tls-connect._tcp     device
+
+PS C:\Projects\com.vadhod.apkextractor>
