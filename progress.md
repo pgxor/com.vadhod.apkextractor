@@ -6,6 +6,16 @@
 
 ---
 
+## 2026-06-08 — Fix: extraction sheet not showing from detail screen
+
+**Bug:** tapping Extract (base/bundle) on the **detail** screen ran the extraction but showed no
+progress/done sheet — `ExtractionSheet` was rendered inside `AppListScreen`, which isn't composed
+while on the Detail route. **Fix:** render `ExtractionSheet` at the root (`AppRoot`) keyed on
+`vm.state.extraction`, so it overlays any screen. Removed the now-unused `onDismissExtraction` param
+from `AppListScreen`. Verified: rebuilt, reinstalled, launched clean on device.
+
+---
+
 ## 2026-06-08 — Phases 2–6: full pastel UI, extraction UX, details, release hardening
 
 **Built the whole app on top of the Phase-1 engine:**

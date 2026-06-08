@@ -32,6 +32,7 @@ import com.vadhod.apkextractor.data.share.Exporters
 import com.vadhod.apkextractor.feature.applist.AppListScreen
 import com.vadhod.apkextractor.feature.applist.AppListViewModel
 import com.vadhod.apkextractor.feature.applist.AppTab
+import com.vadhod.apkextractor.feature.applist.ExtractionSheet
 import com.vadhod.apkextractor.feature.detail.AppDetailScreen
 import com.vadhod.apkextractor.feature.settings.SettingsScreen
 import kotlinx.coroutines.Dispatchers
@@ -176,7 +177,11 @@ private fun AppRoot(container: AppContainer, settings: Settings) {
             onOpenSettings = { route = Route.SETTINGS },
             onExtractSelected = { apps, fmt -> ensureFolderAndExtract(apps, fmt) },
             appsForSelection = vm::appsForSelection,
-            onDismissExtraction = vm::dismissExtraction,
         )
+    }
+
+    // Rendered at the root so the progress / done sheet overlays ANY screen (list or detail).
+    state.extraction?.let { extraction ->
+        ExtractionSheet(state = extraction, onDismiss = vm::dismissExtraction)
     }
 }

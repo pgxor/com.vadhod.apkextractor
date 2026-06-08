@@ -62,7 +62,6 @@ fun AppListScreen(
     onOpenSettings: () -> Unit,
     onExtractSelected: (List<AppEntry>, ExportFormat?) -> Unit,
     appsForSelection: () -> List<AppEntry>,
-    onDismissExtraction: () -> Unit,
 ) {
     val visible = state.visibleApps
     Scaffold(
@@ -133,10 +132,6 @@ fun AppListScreen(
                 }
             }
         }
-    }
-
-    state.extraction?.let { extraction ->
-        ExtractionSheet(state = extraction, onDismiss = onDismissExtraction)
     }
 }
 
