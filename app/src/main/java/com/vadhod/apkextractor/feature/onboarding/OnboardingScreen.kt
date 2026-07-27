@@ -106,28 +106,34 @@ fun OnboardingScreen(onFinish: () -> Unit) {
 
             // Shared 3D stage: one persistent scene that swaps its model as the page changes, with a
             // gentle counter-parallax against the swipe.
-            Box(
+            // The whole page (art + text) lives in the pager, so a swipe anywhere changes pages,
+            // with a gentle parallax + fade on the illustration.
+            HorizontalPager(
+                state = pagerState,
                 modifier = Modifier.fillMaxWidth().weight(1f),
-                contentAlignment = Alignment.Center,
-            ) {
-                val current = pages[pagerState.currentPage]
-                OnboardingIllustration(
-                    art = current.art,
-                    icon = current.icon,
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .graphicsLayer {
-                            translationX = pagerState.currentPageOffsetFraction * size.width * -0.15f
-                        },
-                )
-            }
-
-            HorizontalPager(state = pagerState, modifier = Modifier.fillMaxWidth()) { index ->
+            ) { index ->
                 val page = pages[index]
                 Column(
-                    modifier = Modifier.fillMaxWidth().padding(horizontal = 32.dp),
+                    modifier = Modifier.fillMaxSize().padding(horizontal = 32.dp),
                     horizontalAlignment = Alignment.CenterHorizontally,
                 ) {
+                    Box(
+                        modifier = Modifier.fillMaxWidth().weight(1f),
+                        contentAlignment = Alignment.Center,
+                    ) {
+                        OnboardingIllustration(
+                            art = page.art,
+                            icon = page.icon,
+                            modifier = Modifier
+                                .fillMaxSize()
+                                .graphicsLayer {
+                                    val offset = (pagerState.currentPage - index +
+                                        pagerState.currentPageOffsetFraction).coerceIn(-1f, 1f)
+                                    translationX = size.width * offset * 0.12f
+                                    alpha = 1f - kotlin.math.abs(offset) * 0.4f
+                                },
+                        )
+                    }
                     Text(
                         text = page.title,
                         style = MaterialTheme.typography.headlineMedium,
@@ -142,6 +148,7 @@ fun OnboardingScreen(onFinish: () -> Unit) {
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                         textAlign = TextAlign.Center,
                     )
+                    Spacer(Modifier.height(16.dp))
                 }
             }
 
