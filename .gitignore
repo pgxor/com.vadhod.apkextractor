@@ -15,6 +15,11 @@
 local.properties
 
 
+# Release signing — NEVER commit the upload keystore or its passwords.
+keystore.properties
+*.jks
+*.keystore
+
 # Reference apps live in the top-level DATA/ folder only.
 # NOTE: must be anchored + trailing-slash. A bare "DATA" pattern also matches the
 # app's lowercase `data/` source package on case-insensitive filesystems (Windows/macOS,
