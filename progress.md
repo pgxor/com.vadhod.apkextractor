@@ -6,6 +6,37 @@
 
 ---
 
+## 2026-07-27 — Build fixes, data-layer recovery, and 3D onboarding
+
+**Three things this session (all currently uncommitted):**
+
+1. **Build was broken (`jlink` / JdkImageTransform).** `gradle/gradle-daemon-jvm.properties` required only
+   "Java 21, any vendor", so Gradle auto-detected the VS Code Red Hat **JRE** (no `jlink`) and the Android
+   `JdkImageTransform` failed nondeterministically. **Fix:** pinned `toolchainVendor=ADOPTIUM` (Eclipse
+   Temurin JDK 21, has `jlink`). Removed the now-moot `org.gradle.java.home` from `gradle.properties`.
+
+2. **Entire `data/` layer was missing.** `.gitignore` had a bare `DATA` pattern (for the ref-apps folder);
+   with `core.ignorecase=true` on Windows it also matched the `data/` **source package**, so it was never
+   committed — and this is a fresh clone, so the files were gone (user confirmed deleted, no backup).
+   **Fix:** `.gitignore` → `/DATA/` (anchored). **Reconstructed all 12 types** from the call sites:
+   `Settings`/`SettingsRepository`, `PackageManagerSource`/`PackageRepository`,
+   `AppIconRequest`/`AppIconKeyer`/`AppIconFetcher` (Coil 3), `ApkSink`/`SafApkSink`/`ApkExtractor`,
+   `ApkInspector`/`ApkEntryInfo`, `Exporters`. No new deps; platform APIs only. Added `ApkExtractorTest`
+   (6 cases). `assembleDebug`, `assembleRelease` (R8), `testDebugUnitTest` (**19 tests, 0 fail**) all green.
+   On-device: installed + launched + UI rendered, no crash (extraction happy-path not yet tapped through).
+
+3. **First-run onboarding (3 screens) + replay.** New `feature/onboarding/`: `OnboardingScreen` (3-page
+   `HorizontalPager`, animated pill indicator, Skip/Next/Get-started) + `OnboardingIllustration`. Art is
+   **100% Compose-drawn, no assets/dependency**: page 2 is a hand-drawn **isometric 3D box that hinges
+   open while an APK card pops out**; pages 1 & 3 are animated pastel orbs. Gated on new
+   `Settings.onboardingCompleted` (DataStore); MainActivity holds the splash until settings load to avoid
+   a flash. **Settings → Help → "Replay"** re-shows it. *(Considered SceneView/Filament for real `.glb`
+   3D — added then reverted: user couldn't source models; Compose-native fits the offline/minimal-dep
+   rules far better.)* Compiles + builds + tests green; on-device verify pending (wireless adb kept
+   dropping).
+
+---
+
 ## 2026-06-08 — Fix: extraction sheet not showing from detail screen
 
 **Bug:** tapping Extract (base/bundle) on the **detail** screen ran the extraction but showed no

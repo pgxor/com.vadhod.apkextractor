@@ -10,6 +10,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.rounded.ArrowBack
 import androidx.compose.material.icons.rounded.Folder
+import androidx.compose.material.icons.rounded.Replay
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -41,6 +42,7 @@ fun SettingsScreen(
     onThemeMode: (ThemeMode) -> Unit,
     onBundleToggle: (Boolean) -> Unit,
     onPickFolder: () -> Unit,
+    onReplayOnboarding: () -> Unit,
 ) {
     Scaffold(
         containerColor = Color.Transparent,
@@ -116,6 +118,26 @@ fun SettingsScreen(
                         OutlinedButton(onClick = onPickFolder, modifier = Modifier.padding(top = 8.dp)) {
                             Icon(Icons.Rounded.Folder, contentDescription = null, modifier = Modifier.padding(end = 8.dp))
                             Text("Choose folder")
+                        }
+                    }
+                }
+
+                SettingsCard(title = "Help") {
+                    Row(
+                        modifier = Modifier.fillMaxWidth().padding(vertical = 4.dp),
+                        verticalAlignment = Alignment.CenterVertically,
+                    ) {
+                        Column(modifier = Modifier.weight(1f)) {
+                            Text("Intro tour", style = MaterialTheme.typography.bodyLarge, fontWeight = FontWeight.SemiBold)
+                            Text(
+                                "Replay the animated welcome walkthrough.",
+                                style = MaterialTheme.typography.bodySmall,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                            )
+                        }
+                        OutlinedButton(onClick = onReplayOnboarding) {
+                            Icon(Icons.Rounded.Replay, contentDescription = null, modifier = Modifier.padding(end = 8.dp))
+                            Text("Replay")
                         }
                     }
                 }

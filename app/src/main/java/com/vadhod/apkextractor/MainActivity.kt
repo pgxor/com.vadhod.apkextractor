@@ -11,6 +11,7 @@ import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -34,6 +35,7 @@ import com.vadhod.apkextractor.feature.applist.AppListViewModel
 import com.vadhod.apkextractor.feature.applist.AppTab
 import com.vadhod.apkextractor.feature.applist.ExtractionSheet
 import com.vadhod.apkextractor.feature.detail.AppDetailScreen
+import com.vadhod.apkextractor.feature.onboarding.OnboardingScreen
 import com.vadhod.apkextractor.feature.settings.SettingsScreen
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -43,14 +45,22 @@ private enum class Route { LIST, DETAIL, SETTINGS }
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
-        installSplashScreen()
+        val splash = installSplashScreen()
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
         val container = (application as App).container
+        var uiReady = false
+        splash.setKeepOnScreenCondition { !uiReady }
         setContent {
-            val settings by container.settingsRepository.settings.collectAsState(initial = Settings())
-            VadhodTheme(themeMode = settings.themeMode) {
-                AppRoot(container = container, settings = settings)
+            // Start null and hold the splash until settings first load, so returning users never
+            // flash the first-run onboarding before onboardingCompleted is known.
+            val settings by container.settingsRepository.settings.collectAsState(initial = null)
+            val loaded = settings
+            LaunchedEffect(loaded) { if (loaded != null) uiReady = true }
+            if (loaded != null) {
+                VadhodTheme(themeMode = loaded.themeMode) {
+                    AppRoot(container = container, settings = loaded)
+                }
             }
         }
     }
@@ -60,6 +70,19 @@ class MainActivity : ComponentActivity() {
 private fun AppRoot(container: AppContainer, settings: Settings) {
     val context = LocalContext.current
     val scope = rememberCoroutineScope()
+
+    // First-run onboarding (also replayable from Settings). Takes over the whole screen until the
+    // user finishes or skips, then persists the completed flag.
+    var replayOnboarding by rememberSaveable { mutableStateOf(false) }
+    if (!settings.onboardingCompleted || replayOnboarding) {
+        OnboardingScreen(
+            onFinish = {
+                replayOnboarding = false
+                scope.launch { container.settingsRepository.setOnboardingCompleted(true) }
+            },
+        )
+        return
+    }
 
     val vm: AppListViewModel = viewModel(
         factory = viewModelFactory {
@@ -144,6 +167,7 @@ private fun AppRoot(container: AppContainer, settings: Settings) {
                 onThemeMode = { scope.launch { container.settingsRepository.setThemeMode(it) } },
                 onBundleToggle = { scope.launch { container.settingsRepository.setBundleSplitsByDefault(it) } },
                 onPickFolder = { pendingExtract = null; folderPicker.launch(null) },
+                onReplayOnboarding = { route = Route.LIST; replayOnboarding = true },
             )
         }
 

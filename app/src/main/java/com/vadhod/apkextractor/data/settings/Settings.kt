@@ -14,4 +14,6 @@ data class Settings(
     val bundleSplitsByDefault: Boolean = true,
     val sortOrder: SortOrder = SortOrder.NAME_ASC,
     val exportTreeUri: String? = null,
+    /** False until the user finishes (or skips) the first-run onboarding; replayable from Settings. */
+    val onboardingCompleted: Boolean = false,
 )

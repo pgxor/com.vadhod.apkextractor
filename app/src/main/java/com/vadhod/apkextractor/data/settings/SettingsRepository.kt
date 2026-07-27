@@ -26,6 +26,7 @@ class SettingsRepository(private val context: Context) {
         val bundleSplits = booleanPreferencesKey("bundle_splits_by_default")
         val sortOrder = stringPreferencesKey("sort_order")
         val exportTreeUri = stringPreferencesKey("export_tree_uri")
+        val onboardingCompleted = booleanPreferencesKey("onboarding_completed")
     }
 
     val settings: Flow<Settings> = context.dataStore.data.map { prefs ->
@@ -34,6 +35,7 @@ class SettingsRepository(private val context: Context) {
             bundleSplitsByDefault = prefs[Keys.bundleSplits] ?: true,
             sortOrder = prefs[Keys.sortOrder].toEnumOr(SortOrder.NAME_ASC) { SortOrder.valueOf(it) },
             exportTreeUri = prefs[Keys.exportTreeUri],
+            onboardingCompleted = prefs[Keys.onboardingCompleted] ?: false,
         )
     }
 
@@ -51,6 +53,10 @@ class SettingsRepository(private val context: Context) {
 
     suspend fun setExportTreeUri(uri: String) {
         context.dataStore.edit { it[Keys.exportTreeUri] = uri }
+    }
+
+    suspend fun setOnboardingCompleted(value: Boolean) {
+        context.dataStore.edit { it[Keys.onboardingCompleted] = value }
     }
 
     private inline fun <T> String?.toEnumOr(default: T, parse: (String) -> T): T =
