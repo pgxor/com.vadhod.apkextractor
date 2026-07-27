@@ -15,5 +15,8 @@
 local.properties
 
 
-DATA
-/DATA
+# Reference apps live in the top-level DATA/ folder only.
+# NOTE: must be anchored + trailing-slash. A bare "DATA" pattern also matches the
+# app's lowercase `data/` source package on case-insensitive filesystems (Windows/macOS,
+# core.ignorecase=true), which silently un-tracks the whole data layer.
+/DATA/
