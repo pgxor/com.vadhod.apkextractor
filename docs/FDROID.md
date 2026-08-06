@@ -88,14 +88,17 @@ Changelog: https://github.com/pgxor/com.vadhod.apkextractor/blob/HEAD/CHANGELOG.
 
 RepoType: git
 Repo: https://github.com/pgxor/com.vadhod.apkextractor.git
+Binaries: https://github.com/pgxor/com.vadhod.apkextractor/releases/download/v%v/vadhod-apk-extractor-v%v.apk
+
+AllowedAPKSigningKeys: 9a7ae254b76d1d77aa91a14b144bfb49ce7ae6734bd3ff64d63296a6c04d918d
 
 Builds:
   - versionName: '1.0'
     versionCode: 3
-    commit: v1.0
+    commit: 8605b0254e06734199fdd92cb274dcf2e2c6659a
     subdir: app
     prebuild:
-      - rm -f ../gradle/gradle-daemon-jvm.properties
+      - sed -i -e '/^toolchainUrl/d' -e '/^toolchainVendor/d' ../gradle/gradle-daemon-jvm.properties
     gradle:
       - yes
 
@@ -106,6 +109,28 @@ CurrentVersionCode: 3
 ```
 
 The `prebuild` line is **not optional** — see §6.1.
+
+### 5.1 Review feedback applied (2026-08-06)
+
+Reviewer `@seekme-seekyou` asked for four changes, all applied:
+
+1. **Use the App Inclusion MR template** (`.gitlab/merge_request_templates/App inclusion.md`) — the MR
+   description now follows it.
+2. **Full commit hash, not the tag** — `commit:` is the 40-char SHA, not `v1.0`. Tags can move; hashes
+   can't. `UpdateCheckMode: Tags` still drives auto-update.
+3. **Reproducible builds** — `Binaries:` (note the `%v` placeholder = versionName) plus
+   `AllowedAPKSigningKeys:` (our signing cert SHA-256, lowercase hex, no colons). F-Droid rebuilds from
+   source and, if byte-identical, ships **our** signed APK, so users can move between the GitHub release
+   and F-Droid without uninstalling. **Reproducibility is unverified** — we have no Linux/Docker
+   environment to run `fdroid build`. If it doesn't reproduce we rebuild and re-publish the release;
+   the fallback is dropping `Binaries` and letting F-Droid sign. Declining reproducible builds at
+   inclusion time is the *irreversible* choice, which is why it was enabled.
+4. **JDK 21** — the `sed` keeps `toolchainVersion=21` while stripping the vendor pin and the download
+   URLs, so the buildserver's JDK 21 is used with no auto-provisioning.
+
+**Release-asset naming is now load-bearing.** `Binaries` expands to
+`.../releases/download/v<versionName>/vadhod-apk-extractor-v<versionName>.apk`. Every future release
+must keep that tag and asset-name pattern or reproducible-build verification breaks.
 
 Before opening the MR, validate it locally with F-Droid's own tooling:
 

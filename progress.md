@@ -116,6 +116,33 @@ the pgxor URL fix). ⚠ Ordering gotcha: disabling builds first makes the pipeli
 delete pipelines *before* disabling. Nothing was suppressed: those pipelines contained zero jobs and
 zero verification; F-Droid runs its own build after review.
 
+**F-Droid review round 1 (same day, ~30 min after submitting).** Reviewer `@seekme-seekyou` asked for
+four changes; all applied and answered in an MR comment:
+
+1. Use the **App Inclusion MR template** — description rewritten to it, every box addressed.
+2. **Full commit hash instead of the tag** — `commit: 8605b0254e06734199fdd92cb274dcf2e2c6659a`.
+3. **Reproducible builds** — added `Binaries:` (with the `%v` = versionName placeholder) and
+   `AllowedAPKSigningKeys: 9a7ae254…c04d918d`. Decision rationale: **declining is the irreversible
+   choice** (F-Droid would sign with their key and RB can't be enabled afterwards), whereas enabling
+   can always fall back to F-Droid signing. Reproducibility is **unverified** — no Linux/Docker here to
+   run `fdroid build`; said so plainly in the MR rather than let them discover it.
+4. **JDK 21** — `prebuild` now `sed`s out only `toolchainUrl*` and `toolchainVendor`, *keeping*
+   `toolchainVersion=21`, so the buildserver's JDK 21 is used with no auto-provisioning. (Earlier
+   version deleted the whole file, which left the JDK unspecified.)
+
+⚠ **Release-asset naming is now load-bearing.** `Binaries` expands to
+`.../releases/download/v<versionName>/vadhod-apk-extractor-v<versionName>.apk`. Future releases must
+keep that tag and asset-name pattern or RB verification breaks.
+
+**Reversed the earlier fork-CI decision.** The App Inclusion template says contributors should make the
+pipelines pass and "check that the build pipeline does build your app", so disabling CI on the fork —
+done earlier purely for cosmetics — worked against F-Droid's workflow. CI re-enabled. Pipelines still
+produce 0 jobs; the template covers this case ("just leave a note in the MR so we know we need to
+trigger the CI"), and that note is now in the MR.
+
+Useful API notes: labels can't be set by non-members (`labels=New App` silently returns `[]`), and the
+`/label` quick action doesn't fire on an API description update — maintainers apply it.
+
 **Still open:** (a) SPDX is declared `GPL-3.0-or-later` in `README.md`, `CONTRIBUTING.md` and
 `docs/FDROID.md` — switch to `GPL-3.0-only` if strict-v3 is wanted. (b) Re-upload `privacy_policy.html`
 to its hosting so the live page shows the new contact address. (c) Await F-Droid maintainer review;
