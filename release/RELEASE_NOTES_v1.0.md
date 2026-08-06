@@ -50,4 +50,4 @@ The APK is signed with certificate `CN=Vadhod, OU=Apps, O=Vadhod, L=Mumbai, ST=M
 
 ## License
 
-[GNU GPL v3 or later](https://github.com/pga5e/com.vadhod.apkextractor/blob/main/LICENSE). Full changelog: [`CHANGELOG.md`](https://github.com/pga5e/com.vadhod.apkextractor/blob/main/CHANGELOG.md).
+[GNU GPL v3 or later](https://github.com/pgxor/com.vadhod.apkextractor/blob/main/LICENSE). Full changelog: [`CHANGELOG.md`](https://github.com/pgxor/com.vadhod.apkextractor/blob/main/CHANGELOG.md).

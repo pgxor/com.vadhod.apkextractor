@@ -36,4 +36,4 @@ First public release. Published to Google Play on 27 July 2026 (`versionCode` 3)
 - Non-root: public `PackageManager` and SAF only — no `su`, no Shizuku, no hidden-API reflection.
 - The only sensitive permission is `QUERY_ALL_PACKAGES`, required to enumerate installed apps.
 
-[1.0]: https://github.com/pga5e/com.vadhod.apkextractor/releases/tag/v1.0
+[1.0]: https://github.com/pgxor/com.vadhod.apkextractor/releases/tag/v1.0

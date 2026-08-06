@@ -66,7 +66,7 @@ before Gradle started. Fixed with `git update-index --chmod=+x gradlew` (commit 
 runner does have `compileSdk 37` and the toolchain resolves correctly on Linux.
 
 **Released:** tag `v1.0` pushed and GitHub release **published** —
-<https://github.com/pga5e/com.vadhod.apkextractor/releases/tag/v1.0>. Assets:
+<https://github.com/pgxor/com.vadhod.apkextractor/releases/tag/v1.0>. Assets:
 `vadhod-apk-extractor-v1.0.apk` (3,144,057 B, sha256 `71887d43…0bda7d`),
 `vadhod-apk-extractor-v1.0-source.zip` (3,373,895 B, sha256 `bb95aedf…b5cbae`, `git archive` of the tag),
 and `SHA256SUMS.txt`, plus GitHub's auto-generated source archives. Release artifacts are staged in

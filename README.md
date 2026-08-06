@@ -7,8 +7,8 @@
 **A beautiful, privacy-first tool to extract and back up the APK of any app on your device — completely offline.**
 
 [![License: GPL v3](https://img.shields.io/badge/License-GPLv3-blue.svg?style=flat-square)](LICENSE)
-[![Latest release](https://img.shields.io/github/v/release/pga5e/com.vadhod.apkextractor?style=flat-square&label=release)](https://github.com/pga5e/com.vadhod.apkextractor/releases/latest)
-[![Build](https://img.shields.io/github/actions/workflow/status/pga5e/com.vadhod.apkextractor/build.yml?branch=main&style=flat-square)](https://github.com/pga5e/com.vadhod.apkextractor/actions/workflows/build.yml)
+[![Latest release](https://img.shields.io/github/v/release/pgxor/com.vadhod.apkextractor?style=flat-square&label=release)](https://github.com/pgxor/com.vadhod.apkextractor/releases/latest)
+[![Build](https://img.shields.io/github/actions/workflow/status/pgxor/com.vadhod.apkextractor/build.yml?branch=main&style=flat-square)](https://github.com/pgxor/com.vadhod.apkextractor/actions/workflows/build.yml)
 [![Android 10+](https://img.shields.io/badge/Android-10%2B%20(API%2029)-3DDC84?style=flat-square&logo=android&logoColor=white)](#requirements)
 [![No internet permission](https://img.shields.io/badge/INTERNET%20permission-none-success?style=flat-square)](#privacy)
 [![Kotlin](https://img.shields.io/badge/Kotlin-2.4-7F52FF?style=flat-square&logo=kotlin&logoColor=white)](https://kotlinlang.org)
@@ -84,7 +84,7 @@ Your backups actually reinstall.
 | Source | Link | Notes |
 | --- | --- | --- |
 | **Google Play** | [play.google.com](https://play.google.com/store/apps/details?id=com.vadhod.apkextractor) | Recommended — automatic updates |
-| **GitHub Releases** | [Latest release](https://github.com/pga5e/com.vadhod.apkextractor/releases/latest) | Signed `.apk` + source archives |
+| **GitHub Releases** | [Latest release](https://github.com/pgxor/com.vadhod.apkextractor/releases/latest) | Signed `.apk` + source archives |
 | **F-Droid** | _submission in progress_ | See [`docs/FDROID.md`](docs/FDROID.md) |
 
 > [!IMPORTANT]
@@ -132,7 +132,7 @@ Full policy: [`store-assets/PRIVACY_POLICY.md`](store-assets/PRIVACY_POLICY.md).
 ## Building from source
 
 ```bash
-git clone https://github.com/pga5e/com.vadhod.apkextractor.git
+git clone https://github.com/pgxor/com.vadhod.apkextractor.git
 cd com.vadhod.apkextractor
 
 ./gradlew assembleDebug        # debug APK

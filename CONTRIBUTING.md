@@ -31,7 +31,7 @@ The full list lives in [`rules.md`](rules.md); the architectural blueprint is in
 ## Getting set up
 
 ```bash
-git clone https://github.com/pga5e/com.vadhod.apkextractor.git
+git clone https://github.com/pgxor/com.vadhod.apkextractor.git
 cd com.vadhod.apkextractor
 ./gradlew assembleDebug
 ./gradlew testDebugUnitTest
