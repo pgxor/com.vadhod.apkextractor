@@ -9,12 +9,12 @@ Based on the [Submitting to F-Droid Quick Start Guide](https://f-droid.org/en/do
 
 | Requirement | Status |
 | --- | --- |
-| Public source code repository | ⬜ **Repo must be made public** — currently private |
+| Public source code repository | ✅ <https://github.com/pgxor/com.vadhod.apkextractor> |
 | FOSS license file in the repo | ✅ [`LICENSE`](../LICENSE) — GNU GPL v3 (`GPL-3.0-or-later`) |
 | Only FOSS dependencies (no Firebase, no GMS) | ✅ see §2 |
 | Author notified / does not oppose inclusion | ✅ we are the author |
 | Fastlane metadata in the repo | ✅ see §3 |
-| A git tag on each release commit | ⬜ tag `v1.0` must be pushed |
+| A git tag on each release commit | ✅ `v1.0` pushed |
 
 ## 2. Dependency audit
 
@@ -82,15 +82,15 @@ Categories:
 License: GPL-3.0-or-later
 AuthorName: Parjanya Gala
 AuthorEmail: parjanyagala@gmail.com
+WebSite: https://pgxor.pages.dev/apk-extractor/
 SourceCode: https://github.com/pgxor/com.vadhod.apkextractor
 IssueTracker: https://github.com/pgxor/com.vadhod.apkextractor/issues
 Changelog: https://github.com/pgxor/com.vadhod.apkextractor/blob/HEAD/CHANGELOG.md
 
 RepoType: git
 Repo: https://github.com/pgxor/com.vadhod.apkextractor.git
-Binaries: https://github.com/pgxor/com.vadhod.apkextractor/releases/download/v%v/vadhod-apk-extractor-v%v.apk
-
-AllowedAPKSigningKeys: 9a7ae254b76d1d77aa91a14b144bfb49ce7ae6734bd3ff64d63296a6c04d918d
+Binaries:
+  https://github.com/pgxor/com.vadhod.apkextractor/releases/download/v%v/vadhod-apk-extractor-v%v.apk
 
 Builds:
   - versionName: '1.0'
@@ -101,6 +101,8 @@ Builds:
       - sed -i -e '/^toolchainUrl/d' -e '/^toolchainVendor/d' ../gradle/gradle-daemon-jvm.properties
     gradle:
       - yes
+
+AllowedAPKSigningKeys: 9a7ae254b76d1d77aa91a14b144bfb49ce7ae6734bd3ff64d63296a6c04d918d
 
 AutoUpdateMode: Version
 UpdateCheckMode: Tags
@@ -154,16 +156,21 @@ The criteria therefore won't match any installed JVM, and Gradle will fall back 
 downloading a JDK from the `toolchainUrl.*` foojay endpoints in that same file. F-Droid builds are
 network-restricted and reproducibility-sensitive, so that fails.
 
-Deleting the file makes Gradle simply use the JDK the buildserver already provides via `JAVA_HOME`,
-which is exactly what we want:
+Stripping just those two keys leaves `toolchainVersion=21` in place, so the daemon runs on **JDK 21**
+from the buildserver with no auto-provisioning — which is also what the reviewer asked for:
 
 ```yaml
     prebuild:
-      - rm -f ../gradle/gradle-daemon-jvm.properties
+      - sed -i -e '/^toolchainUrl/d' -e '/^toolchainVendor/d' ../gradle/gradle-daemon-jvm.properties
 ```
 
-(`prebuild` runs in the `subdir`, i.e. `app/`, hence the `../`.) Nothing else in the build depends on
-that file — it only selects the daemon JVM.
+(`prebuild` runs in the `subdir`, i.e. `app/`, hence the `../` — confirmed against the Build Metadata
+Reference.) Nothing else in the build depends on that file; it only selects the daemon JVM. An earlier
+revision deleted the file outright with `rm -f`, but that left the JDK version unspecified.
+
+If the buildserver resolves this differently, the fallback is an explicit
+`export JAVA_HOME=/usr/lib/jvm/java-21-openjdk-amd64` inside a custom `build:` block — offered to the
+reviewer, awaiting their preference.
 
 ### 6.2 Toolchain freshness
 

@@ -10,9 +10,8 @@ Changelog: https://github.com/pgxor/com.vadhod.apkextractor/blob/HEAD/CHANGELOG.
 
 RepoType: git
 Repo: https://github.com/pgxor/com.vadhod.apkextractor.git
-Binaries: https://github.com/pgxor/com.vadhod.apkextractor/releases/download/v%v/vadhod-apk-extractor-v%v.apk
-
-AllowedAPKSigningKeys: 9a7ae254b76d1d77aa91a14b144bfb49ce7ae6734bd3ff64d63296a6c04d918d
+Binaries:
+  https://github.com/pgxor/com.vadhod.apkextractor/releases/download/v%v/vadhod-apk-extractor-v%v.apk
 
 Builds:
   - versionName: '1.0'
@@ -23,6 +22,8 @@ Builds:
       - sed -i -e '/^toolchainUrl/d' -e '/^toolchainVendor/d' ../gradle/gradle-daemon-jvm.properties
     gradle:
       - yes
+
+AllowedAPKSigningKeys: 9a7ae254b76d1d77aa91a14b144bfb49ce7ae6734bd3ff64d63296a6c04d918d
 
 AutoUpdateMode: Version
 UpdateCheckMode: Tags
