@@ -143,6 +143,23 @@ trigger the CI"), and that note is now in the MR.
 Useful API notes: labels can't be set by non-members (`labels=New App` silently returns `[]`), and the
 `/label` quick action doesn't fire on an API description update — maintainers apply it.
 
+**Website live: <https://pgxor.github.io>** — new repo `pgxor/pgxor.github.io` (GitHub Pages, `main`, no
+Jekyll). Pages: `/` (Vadhod hub), `/apk-extractor/`, `/apk-extractor/download/` (checksums + `apksigner`
+verification), `/apk-extractor/privacy/`, plus a custom `404.html`. All verified 200 live.
+
+Design: palette and typeface taken from the app's own design system rather than invented, so site and
+app match — Nunito is **self-hosted** (the app's bundled variable TTF converted to woff2 with
+fontTools, 270 KB → 98 KB), deliberately *not* Google Fonts, since loading it would report every
+visitor to Google on a site whose whole claim is "no trackers". Zero third-party requests; 677 KB total.
+Light/dark via tokens plus a `data-theme` toggle. The app-page hero is the real `AndroidManifest`
+permission block with `INTERNET` struck through and linked to `NoInternetPermissionTest.kt`.
+
+Host choice: `pgxor.github.io` (user site) over an org, because `<name>.github.io` needs an org/user of
+that exact name and org creation is UI-only. ⚠ Trade-off accepted knowingly: **another username rename
+would break every one of these URLs.** A custom domain would insulate against that.
+
+`WebSite: https://pgxor.github.io/apk-extractor/` added to the F-Droid metadata; README links the site.
+
 **Still open:** (a) SPDX is declared `GPL-3.0-or-later` in `README.md`, `CONTRIBUTING.md` and
 `docs/FDROID.md` — switch to `GPL-3.0-only` if strict-v3 is wanted. (b) Re-upload `privacy_policy.html`
 to its hosting so the live page shows the new contact address. (c) Await F-Droid maintainer review;

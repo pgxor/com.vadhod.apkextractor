@@ -87,6 +87,10 @@ Your backups actually reinstall.
 | **GitHub Releases** | [Latest release](https://github.com/pgxor/com.vadhod.apkextractor/releases/latest) | Signed `.apk` + source archives |
 | **F-Droid** | _submission in progress_ | See [`docs/FDROID.md`](docs/FDROID.md) |
 
+Website: **[pgxor.github.io/apk-extractor](https://pgxor.github.io/apk-extractor/)** —
+[downloads and checksums](https://pgxor.github.io/apk-extractor/download/) ·
+[privacy policy](https://pgxor.github.io/apk-extractor/privacy/)
+
 > [!IMPORTANT]
 > **The GitHub APK and the Play Store APK are signed with different keys.** Google Play re-signs
 > uploads with its own app-signing key, so the GitHub build will not install *over* a Play install
