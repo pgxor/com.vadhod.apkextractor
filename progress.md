@@ -102,12 +102,19 @@ it); `prebuild: rm -f ../gradle/gradle-daemon-jvm.properties` included **by defa
 Gradle into downloading a JDK from the foojay URLs in that same file. Confirmed against the Build
 Metadata Reference that `prebuild` runs in `subdir` (`app/`), so the `../` is correct.
 
-**Fork pipelines show red — this is noise, not a defect.** `pgxor/fdroiddata` pipelines
-(`2736227287`, `2736235797`, `2736237582`) all fail with **0 jobs** and no YAML errors; the first of
-those ran on the fork's untouched `master` *before* our file existed, which proves it isn't caused by
-the metadata. fdroiddata's `app_verification_rules` filter every job out in this context. It does not
-block the MR: upstream has `only_allow_merge_if_pipeline_succeeds = false`, and F-Droid runs its own
-verification after review.
+**Fork pipelines showed red — diagnosed and cleaned up.** `pgxor/fdroiddata` pipelines
+(`2736227287`, `2736235797`, `2736237582`) all failed with **0 jobs** and no YAML errors; the first of
+those ran on the fork's untouched `master` *before* our file existed, which proves it wasn't caused by
+the metadata — fdroiddata's `app_verification_rules` filter every job out in a fork context.
+
+Empirical check that settled it: **all 12 recently-merged "New app:" MRs have `head_pipeline: none`** —
+no pipeline runs for them at all. Ours only got one because a fresh GitLab fork has CI/CD enabled by
+default. Fix: set `jobs_enabled=false` / `builds_access_level=disabled` on the fork and delete the four
+empty pipelines, so the MR matches every merged precedent. MR now reports `head_pipeline: none`,
+`detailed_merge_status: mergeable`, and `squash=true` is set (the branch has 2 commits — create, then
+the pgxor URL fix). ⚠ Ordering gotcha: disabling builds first makes the pipelines API return 404 — must
+delete pipelines *before* disabling. Nothing was suppressed: those pipelines contained zero jobs and
+zero verification; F-Droid runs its own build after review.
 
 **Still open:** (a) SPDX is declared `GPL-3.0-or-later` in `README.md`, `CONTRIBUTING.md` and
 `docs/FDROID.md` — switch to `GPL-3.0-only` if strict-v3 is wanted. (b) Re-upload `privacy_policy.html`
