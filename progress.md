@@ -6,6 +6,61 @@
 
 ---
 
+## 2026-08-06 — Public-repo prep: README, GPL-3.0 LICENSE, F-Droid metadata, GitHub release
+
+App is **live on Google Play** (`versionCode` 3, `versionName` 1.0, published 27 Jul 2026). This session
+prepared the repo to go public and to be submitted to F-Droid. **T-065 is now essentially done.**
+
+**Added:**
+
+1. **`LICENSE`** — canonical GNU GPL v3 text (35,149 bytes) downloaded from `gnu.org/licenses/gpl-3.0.txt`.
+   Matches `architecture.md` Q16 and the existing in-app About string. README declares SPDX
+   **`GPL-3.0-or-later`** (the standard GPL boilerplate "or any later version"); change to `GPL-3.0-only`
+   if strict-v3 is wanted — it appears in `README.md`, `CONTRIBUTING.md` and `docs/FDROID.md`.
+
+2. **`README.md`** (renamed from `README.MD` — needed `git rm --cached` because `core.ignorecase=true`
+   makes plain `git mv` a no-op). Full public README: icon, badges, Play badge, 5 screenshots, features,
+   download table with the **signing-key mismatch warning** (Play re-signs, so the GitHub APK won't
+   install over a Play install), privacy/permissions section, build instructions, architecture map.
+
+3. **Assets are now tracked.** `DATA/` is git-ignored, so the screenshots and Play badge that lived there
+   could never render on GitHub. Screenshots resized 1290×2796 → **1080×2341** and palette-quantised
+   (1.2 MB → ~170–570 KB each) into `fastlane/.../phoneScreenshots/`; badge → `docs/assets/`.
+
+4. **F-Droid readiness** — `fastlane/metadata/android/en-US/` (`title`, `short_description` 67 chars,
+   `full_description`, `changelogs/3.txt` trimmed under the 500-char cap, `images/icon.png` 512×512,
+   `phoneScreenshots/1-5.png`), plus **`docs/FDROID.md`**: eligibility checklist, FOSS dependency audit
+   (no Firebase/GMS; Coil is local-icon-only), the ready-to-paste `metadata/com.vadhod.apkextractor.yml`
+   for a fdroiddata MR, and two flagged buildserver risks — (a) Gradle 9.6.1/AGP 9.3/`compileSdk 37`
+   freshness, (b) `gradle/gradle-daemon-jvm.properties` `toolchainUrl.*` entries can make Gradle try to
+   **download** a JDK, which needs a `prebuild` `sed` line to strip.
+
+5. **Repo polish** — `CHANGELOG.md` (Keep a Changelog, 1.0 entry), `CONTRIBUTING.md` (the non-negotiables
+   restated), `SECURITY.md` (private reporting, scope, release-verification fingerprint),
+   `.github/workflows/build.yml` (test + assembleDebug + assembleRelease on ubuntu/JDK 21),
+   `.github/ISSUE_TEMPLATE/` (bug, feature, config).
+
+**Verification:** `./gradlew assembleRelease` **BUILD SUCCESSFUL** — `app-release.apk`, 3,144,057 bytes,
+SHA-256 `71887d4321023bd5c6ac1d1b3ffb8e42a3c44ef3e5a655abc9dd5364790bda7d`. `apksigner verify` confirms
+`CN=Vadhod, OU=Apps, O=Vadhod, L=Mumbai, ST=MH, C=IN`, cert SHA-256 `9a7ae254b76d…c04d918d`.
+
+**⚠ Local toolchain regression (not a repo bug):** the `toolchainVendor=ADOPTIUM` pin from 27 Jul is
+**no longer sufficient**. The VS Code Red Hat extension's bundled JRE (`21.0.11`) is *itself* an Adoptium
+build, so it satisfies the vendor pin while still having no `jlink`, and `JdkImageTransform` fails again.
+Working invocation until this is properly fixed:
+
+```bash
+JDK='C:\Program Files\Eclipse Adoptium\jdk-21.0.10.7-hotspot'
+./gradlew --stop
+JAVA_HOME="$JDK" ./gradlew assembleRelease --no-configuration-cache \
+  -Dorg.gradle.java.installations.auto-detect=false \
+  "-Dorg.gradle.java.installations.paths=$JDK"
+```
+
+A durable fix (pin the exact JDK path, or exclude the `.vscode` install from detection) is still **TODO**.
+
+---
+
 ## 2026-07-27 — Build fixes, data-layer recovery, and 3D onboarding
 
 **Three things this session (all currently uncommitted):**

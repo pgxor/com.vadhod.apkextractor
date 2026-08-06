@@ -1,0 +1,29 @@
+Vadhod APK Extractor is a beautiful, privacy-first tool to extract and back up the APK of any app installed on your device — completely offline.
+
+Modern apps ship as "split APKs". Vadhod handles them properly: simple apps export as a clean single .apk, while split apps are bundled into one reinstallable .apks archive automatically. Your backups actually reinstall.
+
+PRIVATE BY DESIGN
+* 100% offline — the app has NO internet permission at all.
+* No tracking, no analytics, no ads, no accounts.
+* Nothing ever leaves your device. Files are saved only to the folder you choose.
+
+EXTRACT & BACK UP
+* Browse every installed app, split into System and User tabs.
+* Search and sort by name, size, install date or last update.
+* Extract a single app, or select many and batch-extract at once.
+* Save to any folder using Android's Storage Access Framework.
+
+SPLIT-APK AWARE
+* Export the base APK, or bundle base + splits into a reinstallable .apks archive.
+
+INSPECT & SHARE
+* See version, size, min/target SDK, install dates.
+* View the signing certificate (SHA-256) and the APK's contents.
+* Share an extracted APK, or export any app's icon as a PNG.
+
+BEAUTIFUL
+* A soft, calm pastel design with light and dark themes.
+
+Vadhod APK Extractor is open source and built to respect you: minimal permissions, minimal footprint, zero data collection.
+
+Note: The "Query all apps" (QUERY_ALL_PACKAGES) permission is used solely to list the apps installed on your device so you can extract them. This information stays on your device and is never collected or transmitted.

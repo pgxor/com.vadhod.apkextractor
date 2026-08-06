@@ -1,0 +1,37 @@
+name: Feature request
+description: Suggest an idea for the app
+labels: ["enhancement"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Before suggesting, please skim [`rules.md`](../blob/main/rules.md). Some things will always be
+        declined: anything needing network access, root/Shizuku, extra permissions, or a tracker.
+
+  - type: textarea
+    id: problem
+    attributes:
+      label: What problem would this solve?
+      description: Describe the situation you run into, not just the solution you have in mind.
+    validations:
+      required: true
+
+  - type: textarea
+    id: proposal
+    attributes:
+      label: What would you like to see?
+    validations:
+      required: true
+
+  - type: checkboxes
+    id: constraints
+    attributes:
+      label: Constraints
+      options:
+        - label: This does not require internet access, root, or any additional permission.
+          required: true
+
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternatives you've considered

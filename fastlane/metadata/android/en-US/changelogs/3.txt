@@ -1,0 +1,10 @@
+First public release.
+
+* Browse installed apps in System and User tabs; search and sort.
+* Extract one app or batch-extract a selection, with live progress.
+* Split-APK aware: single .apk, or a reinstallable .apks bundle.
+* Inspect SDK levels, install dates, signing SHA-256 and APK contents.
+* Share an APK or export an app icon as PNG.
+* Saves only to the folder you pick (SAF).
+* Pastel design with light and dark themes.
+* No internet permission, no trackers, no analytics.
