@@ -2,12 +2,10 @@ Categories:
   - System
 License: GPL-3.0-or-later
 AuthorName: Parjanya Gala
-AuthorEmail: Project_AI@a5econsulting.net
+AuthorEmail: parjanyagala@gmail.com
 SourceCode: https://github.com/pga5e/com.vadhod.apkextractor
 IssueTracker: https://github.com/pga5e/com.vadhod.apkextractor/issues
 Changelog: https://github.com/pga5e/com.vadhod.apkextractor/blob/HEAD/CHANGELOG.md
-
-AutoName: Vadhod APK Extractor
 
 RepoType: git
 Repo: https://github.com/pga5e/com.vadhod.apkextractor.git

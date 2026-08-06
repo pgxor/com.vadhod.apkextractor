@@ -13,7 +13,7 @@ Only the most recent release receives security fixes.
 
 **Please do not open a public GitHub issue for a security problem.**
 
-Report it privately to **Project_AI@a5econsulting.net**, or use GitHub's
+Report it privately to **parjanyagala@gmail.com**, or use GitHub's
 [private vulnerability reporting](https://github.com/pga5e/com.vadhod.apkextractor/security/advisories/new)
 on this repository.
 

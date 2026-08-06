@@ -39,4 +39,4 @@ If this policy changes, the updated version will be published at this page with 
 date.
 
 ## Contact
-Questions? Contact: **Project_AI@a5econsulting.net**
+Questions? Contact: **parjanyagala@gmail.com**

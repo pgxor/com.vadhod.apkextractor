@@ -147,7 +147,7 @@ can extract them. This information stays on your device and is never collected o
 **Other listing fields**
 - **App category:** Tools
 - **Tags:** choose Utilities / Tools relevant tags
-- **Contact email:** Project_AI@a5econsulting.net
+- **Contact email:** parjanyagala@gmail.com
 - **Website:** (optional — your GitHub repo is a good choice)
 - **Privacy Policy URL:** required (see §5.1)
 
