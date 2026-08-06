@@ -145,7 +145,7 @@ fun SettingsScreen(
                 SettingsCard(title = "About") {
                     Text("Vadhod APK Extractor", style = MaterialTheme.typography.bodyLarge, fontWeight = FontWeight.Bold)
                     Text(
-                        "Offline-only, privacy-first, open-source APK extractor. No internet permission, no tracking, no ads. Licensed under GPL-3.0.",
+                        "Offline-only, privacy-first, open-source APK extractor. No internet permission, no tracking, no ads. Licensed under GPL-3.0-or-later.",
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                         modifier = Modifier.padding(top = 4.dp),

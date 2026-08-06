@@ -27,8 +27,8 @@ category.
 3. **Minimal permissions / minimal attack surface.** Pure non-root. We rely only on
    `PackageManager` + Storage Access Framework. The fewer dependencies and permissions, the smaller
    the surface — see `libraries-used.md` §4 for everything we deliberately *don't* ship.
-4. **Open source.** License: TBD (`questionnaire.md` Q9 — recommend GPL-3.0 to match the genre, or
-   MIT/Apache-2.0 for permissiveness). Reproducible, dependency-locked builds.
+4. **Open source.** License: **GPL-3.0-or-later** (SPDX `GPL-3.0-or-later`; full text in `LICENSE`).
+   Reproducible, dependency-locked builds.
 5. **Core correctness before polish.** Extraction must be bulletproof (split handling, large apps,
    cancellation, storage errors) *before* we chase visual flourish — but the UI is the headline
    feature once core is solid.
@@ -63,7 +63,7 @@ category.
 | Q13 | Filename | `<AppLabel>_<versionName>_<versionCode>.apk` (sanitized). |
 | Q14 | Icon export | **Yes** (PNG via SAF). |
 | Q15 | Inspector depth | Zip entries + signing **SHA-256** + manifest summary. |
-| Q16 | License | **GPL-3.0** (F-Droid-friendly; change on request). |
+| Q16 | License | **GPL-3.0-or-later** (SPDX `GPL-3.0-or-later`; F-Droid-friendly). Confirmed 2026-08-06. |
 | Q17 | Distribution | **Play Store + GitHub Releases + F-Droid** (Play needs `QUERY_ALL_PACKAGES` justification). |
 | Q18 | Language | **English** v1 + localization scaffolding. |
 | Q19/Q20 | Other | Prioritize great UI; no extra constraints. |
