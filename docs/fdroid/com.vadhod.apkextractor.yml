@@ -1,0 +1,28 @@
+Categories:
+  - System
+License: GPL-3.0-or-later
+AuthorName: Parjanya Gala
+AuthorEmail: Project_AI@a5econsulting.net
+SourceCode: https://github.com/pga5e/com.vadhod.apkextractor
+IssueTracker: https://github.com/pga5e/com.vadhod.apkextractor/issues
+Changelog: https://github.com/pga5e/com.vadhod.apkextractor/blob/HEAD/CHANGELOG.md
+
+AutoName: Vadhod APK Extractor
+
+RepoType: git
+Repo: https://github.com/pga5e/com.vadhod.apkextractor.git
+
+Builds:
+  - versionName: '1.0'
+    versionCode: 3
+    commit: v1.0
+    subdir: app
+    prebuild:
+      - rm -f ../gradle/gradle-daemon-jvm.properties
+    gradle:
+      - yes
+
+AutoUpdateMode: Version
+UpdateCheckMode: Tags
+CurrentVersion: '1.0'
+CurrentVersionCode: 3

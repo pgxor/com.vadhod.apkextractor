@@ -68,9 +68,13 @@ The tag name must stay consistent (`v<versionName>`) across releases.
 
 ## 5. Prepared fdroiddata metadata
 
-Fork [`fdroid/fdroiddata`](https://gitlab.com/fdroid/fdroiddata), create
-`metadata/com.vadhod.apkextractor.yml` with the content below, and open a merge request. (The guide
-notes a merge request is preferred over opening an RFP issue.)
+Fork [`fdroid/fdroiddata`](https://gitlab.com/fdroid/fdroiddata), copy
+[`docs/fdroid/com.vadhod.apkextractor.yml`](fdroid/com.vadhod.apkextractor.yml) from this repo to
+`metadata/com.vadhod.apkextractor.yml` in the fork, and open a merge request. (The guide notes a merge
+request is preferred over opening an RFP issue.)
+
+The file is kept in this repo so it stays in sync with `versionCode`/`versionName` — update it in the
+same commit as any future version bump. Current contents:
 
 ```yaml
 Categories:
@@ -92,6 +96,8 @@ Builds:
     versionCode: 3
     commit: v1.0
     subdir: app
+    prebuild:
+      - rm -f ../gradle/gradle-daemon-jvm.properties
     gradle:
       - yes
 
@@ -100,6 +106,8 @@ UpdateCheckMode: Tags
 CurrentVersion: '1.0'
 CurrentVersionCode: 3
 ```
+
+The `prebuild` line is **not optional** — see §6.1.
 
 Before opening the MR, validate it locally with F-Droid's own tooling:
 
@@ -112,29 +120,37 @@ fdroid build -v -l com.vadhod.apkextractor    # full build in the buildserver VM
 
 ## 6. Known build-server risks
 
-Two things are worth checking with `fdroid build` before submitting, because they are the most likely
-causes of a rejected build:
+### 6.1 `gradle-daemon-jvm.properties` will break the build unless removed
 
-1. **Toolchain freshness.** This project uses Gradle 9.6.1, AGP 9.3.x and `compileSdk 37`. F-Droid's
-   buildserver has to support all three. If its Gradle or SDK is older, the build will fail and the
-   fix is either to wait for the buildserver to catch up or to add explicit `srclibs`/`sudo` setup
-   lines to the build recipe.
+This one is close to certain, which is why the `prebuild` line is in the recipe by default.
 
-2. **`gradle/gradle-daemon-jvm.properties` auto-provisioning.** That file carries `toolchainUrl.*`
-   entries pointing at the foojay API, so Gradle may try to **download** a JDK. F-Droid builds are
-   network-restricted and reproducibility-sensitive, so this will likely need neutralising in the
-   build recipe:
+`gradle/gradle-daemon-jvm.properties` pins the Gradle **Daemon JVM Criteria** to
+`toolchainVersion=21` **and `toolchainVendor=ADOPTIUM`**. That vendor pin exists to work around a local
+Windows problem (see `progress.md`), but F-Droid's buildserver runs Debian's **OpenJDK**, not Adoptium.
+The criteria therefore won't match any installed JVM, and Gradle will fall back to auto-provisioning —
+downloading a JDK from the `toolchainUrl.*` foojay endpoints in that same file. F-Droid builds are
+network-restricted and reproducibility-sensitive, so that fails.
 
-   ```yaml
-     - versionName: '1.0'
-       versionCode: 3
-       commit: v1.0
-       subdir: app
-       prebuild:
-         - sed -i '/^toolchainUrl/d' ../gradle/gradle-daemon-jvm.properties
-       gradle:
-         - yes
-   ```
+Deleting the file makes Gradle simply use the JDK the buildserver already provides via `JAVA_HOME`,
+which is exactly what we want:
+
+```yaml
+    prebuild:
+      - rm -f ../gradle/gradle-daemon-jvm.properties
+```
+
+(`prebuild` runs in the `subdir`, i.e. `app/`, hence the `../`.) Nothing else in the build depends on
+that file — it only selects the daemon JVM.
+
+### 6.2 Toolchain freshness
+
+This project uses Gradle 9.6.1, AGP 9.3.x and `compileSdk 37`. F-Droid's buildserver has to support all
+three. If its Gradle or SDK is older the build will fail; the fix is either to wait for the buildserver
+to catch up or to add explicit `srclibs`/`sudo` setup lines to the recipe. GitHub Actions'
+`ubuntu-latest` builds this fine (see the `Build` workflow), which is a reasonable proxy but not a
+guarantee.
+
+### 6.3 Not a problem: signing
 
 Signing is not a concern: `app/build.gradle.kts` only wires a `signingConfig` when a
 `keystore.properties` file is present, and that file is git-ignored. On a clean clone the release
