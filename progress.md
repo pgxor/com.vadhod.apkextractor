@@ -75,10 +75,45 @@ and `SHA256SUMS.txt`, plus GitHub's auto-generated source archives. Release arti
 **Pre-public security check:** `git ls-files` and a full-history `--diff-filter=A` scan confirm
 `keystore.properties`, `*.jks` and `local.properties` have **never** been committed. Safe to make public.
 
-**Still open:** (a) repo is still **private** — user will flip it manually; the README's shields.io
-`release`/`build` badges will read "not found" until then. (b) SPDX is declared `GPL-3.0-or-later` in
-`README.md`, `CONTRIBUTING.md` and `docs/FDROID.md` — switch to `GPL-3.0-only` if strict-v3 is wanted.
-(c) F-Droid MR not yet opened; see `docs/FDROID.md`.
+**Repo is public** (flipped by the user). GitHub detects GPL-3.0 from `LICENSE`. About/description,
+Play Store homepage link and 14 topics set via `gh repo edit`. Both shields.io badges resolve live
+(`release: v1.0`, `build: passing`).
+
+**GitHub account renamed `pga5e` → `pgxor`.** GitHub redirects the old paths, but 22 references across
+`README.md`, `SECURITY.md`, `CHANGELOG.md`, `CONTRIBUTING.md`, `.github/ISSUE_TEMPLATE/config.yml`,
+`docs/FDROID.md`, `docs/fdroid/*.yml` and the release notes were updated to the canonical URL, plus
+`git remote set-url` and the published v1.0 release body (`gh release edit`). Canonical URLs matter for
+the F-Droid metadata, which shouldn't depend on a redirect.
+
+**Contact email** changed to `parjanyagala@gmail.com` across `SECURITY.md`, both privacy-policy files,
+`PLAY_STORE.md` and the F-Droid metadata. ⚠ `store-assets/privacy_policy.html` is the file **hosted at
+the URL the Play listing points to** — the live page still shows the old address until it is re-uploaded.
+
+**F-Droid MR submitted:** <https://gitlab.com/fdroid/fdroiddata/-/merge_requests/44998> — "New app:
+Vadhod APK Extractor", one new file (`metadata/com.vadhod.apkextractor.yml`), opened from the fork
+`pgxor/fdroiddata`, branch `com.vadhod.apkextractor`, targeting `fdroid/fdroiddata:master`. Submitted
+via the GitLab API (no clone — fdroiddata is huge). Two API gotchas for next time: `glab api` needs an
+explicit `-H "Content-Type: application/json"` with `--input` (otherwise HTTP 415), and the fork import
+takes ~5 minutes before branches can be created.
+
+Metadata decisions: `AutoName` removed (F-Droid generates it — the docs say maintainers shouldn't set
+it); `prebuild: rm -f ../gradle/gradle-daemon-jvm.properties` included **by default**, because the
+`toolchainVendor=ADOPTIUM` pin matches nothing on F-Droid's Debian-OpenJDK buildserver and would push
+Gradle into downloading a JDK from the foojay URLs in that same file. Confirmed against the Build
+Metadata Reference that `prebuild` runs in `subdir` (`app/`), so the `../` is correct.
+
+**Fork pipelines show red — this is noise, not a defect.** `pgxor/fdroiddata` pipelines
+(`2736227287`, `2736235797`, `2736237582`) all fail with **0 jobs** and no YAML errors; the first of
+those ran on the fork's untouched `master` *before* our file existed, which proves it isn't caused by
+the metadata. fdroiddata's `app_verification_rules` filter every job out in this context. It does not
+block the MR: upstream has `only_allow_merge_if_pipeline_succeeds = false`, and F-Droid runs its own
+verification after review.
+
+**Still open:** (a) SPDX is declared `GPL-3.0-or-later` in `README.md`, `CONTRIBUTING.md` and
+`docs/FDROID.md` — switch to `GPL-3.0-only` if strict-v3 is wanted. (b) Re-upload `privacy_policy.html`
+to its hosting so the live page shows the new contact address. (c) Await F-Droid maintainer review;
+the flagged toolchain-freshness risk (Gradle 9.6.1 / AGP 9.3.1 / `compileSdk 37`) is still unverified
+against their buildserver.
 
 ---
 
