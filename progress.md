@@ -59,6 +59,27 @@ JAVA_HOME="$JDK" ./gradlew assembleRelease --no-configuration-cache \
 
 A durable fix (pin the exact JDK path, or exclude the `.vscode` install from detection) is still **TODO**.
 
+**CI bug found and fixed:** the first Actions runs failed outright — `gradlew` was committed with mode
+`100644` (Windows has no executable bit), so `./gradlew` on `ubuntu-latest` died with *Permission denied*
+before Gradle started. Fixed with `git update-index --chmod=+x gradlew` (commit `8605b02`). Run
+`31075844407` is **green** (7m27s: `testDebugUnitTest` + `assembleDebug` + `assembleRelease`), so the
+runner does have `compileSdk 37` and the toolchain resolves correctly on Linux.
+
+**Released:** tag `v1.0` pushed and GitHub release **published** —
+<https://github.com/pga5e/com.vadhod.apkextractor/releases/tag/v1.0>. Assets:
+`vadhod-apk-extractor-v1.0.apk` (3,144,057 B, sha256 `71887d43…0bda7d`),
+`vadhod-apk-extractor-v1.0-source.zip` (3,373,895 B, sha256 `bb95aedf…b5cbae`, `git archive` of the tag),
+and `SHA256SUMS.txt`, plus GitHub's auto-generated source archives. Release artifacts are staged in
+`release/`, which is now git-ignored.
+
+**Pre-public security check:** `git ls-files` and a full-history `--diff-filter=A` scan confirm
+`keystore.properties`, `*.jks` and `local.properties` have **never** been committed. Safe to make public.
+
+**Still open:** (a) repo is still **private** — user will flip it manually; the README's shields.io
+`release`/`build` badges will read "not found" until then. (b) SPDX is declared `GPL-3.0-or-later` in
+`README.md`, `CONTRIBUTING.md` and `docs/FDROID.md` — switch to `GPL-3.0-only` if strict-v3 is wanted.
+(c) F-Droid MR not yet opened; see `docs/FDROID.md`.
+
 ---
 
 ## 2026-07-27 — Build fixes, data-layer recovery, and 3D onboarding
