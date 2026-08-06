@@ -1,0 +1,71 @@
+name: Bug report
+description: Something in the app doesn't work as expected
+labels: ["bug"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for taking the time to report this. The app has **no network access**, so there are no
+        server-side logs — the detail you give here is all we have to work with.
+
+  - type: textarea
+    id: what-happened
+    attributes:
+      label: What happened?
+      description: What did you expect, and what happened instead?
+    validations:
+      required: true
+
+  - type: textarea
+    id: steps
+    attributes:
+      label: Steps to reproduce
+      placeholder: |
+        1. Open the User tab
+        2. Search for "..."
+        3. Tap Extract
+        4. ...
+    validations:
+      required: true
+
+  - type: input
+    id: app-version
+    attributes:
+      label: App version
+      description: Settings → About
+      placeholder: "1.0"
+    validations:
+      required: true
+
+  - type: dropdown
+    id: source
+    attributes:
+      label: Where did you install it from?
+      options:
+        - Google Play
+        - GitHub Releases
+        - F-Droid
+        - Built from source
+    validations:
+      required: true
+
+  - type: input
+    id: device
+    attributes:
+      label: Device and Android version
+      placeholder: "moto g45 5G, Android 15"
+    validations:
+      required: true
+
+  - type: input
+    id: target-app
+    attributes:
+      label: Which app were you extracting?
+      description: Package name if you know it, and whether it is a split app.
+      placeholder: "com.example.app (split)"
+
+  - type: textarea
+    id: extra
+    attributes:
+      label: Anything else?
+      description: Screenshots or a logcat excerpt help. Please redact anything private.

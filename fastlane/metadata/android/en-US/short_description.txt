@@ -1,0 +1,1 @@
+Offline, privacy-first APK extractor with proper split-APK support.
