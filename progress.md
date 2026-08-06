@@ -143,8 +143,9 @@ trigger the CI"), and that note is now in the MR.
 Useful API notes: labels can't be set by non-members (`labels=New App` silently returns `[]`), and the
 `/label` quick action doesn't fire on an API description update — maintainers apply it.
 
-**Website live: <https://pgxor.github.io>** — new repo `pgxor/pgxor.github.io` (GitHub Pages, `main`, no
-Jekyll). Pages: `/` (Vadhod hub), `/apk-extractor/`, `/apk-extractor/download/` (checksums + `apksigner`
+**Website live: <https://pgxor.pages.dev>** — served by **Cloudflare Pages** (project `pgxor`, direct
+upload via `wrangler`, no Git integration). Source lives in the now-**private** repo
+`pgxor/pgxor.github.io`. Pages: `/` (Vadhod hub), `/apk-extractor/`, `/apk-extractor/download/` (checksums + `apksigner`
 verification), `/apk-extractor/privacy/`, plus a custom `404.html`. All verified 200 live.
 
 Design: palette and typeface taken from the app's own design system rather than invented, so site and
@@ -154,11 +155,15 @@ visitor to Google on a site whose whole claim is "no trackers". Zero third-party
 Light/dark via tokens plus a `data-theme` toggle. The app-page hero is the real `AndroidManifest`
 permission block with `INTERNET` struck through and linked to `NoInternetPermissionTest.kt`.
 
-Host choice: `pgxor.github.io` (user site) over an org, because `<name>.github.io` needs an org/user of
-that exact name and org creation is UI-only. ⚠ Trade-off accepted knowingly: **another username rename
-would break every one of these URLs.** A custom domain would insulate against that.
+Host: moved off GitHub Pages to Cloudflare Pages so the source repo could be private — GitHub Pages
+serves private repos only on paid plans. Direct upload means Cloudflare never gets GitHub access.
+Deploy command: `npx wrangler pages deploy . --project-name pgxor --branch main`. A `vadhod` project
+was created first, then deleted in favour of `pgxor`. ⚠ Same rename caveat as before: the URL follows
+the project name, so a custom domain (`vadhod.com` is owned, currently on InfinityFree nameservers and
+not resolving) would insulate against it.
 
-`WebSite: https://pgxor.github.io/apk-extractor/` added to the F-Droid metadata; README links the site.
+`WebSite: https://pgxor.pages.dev/apk-extractor/` in the F-Droid metadata (updated on the MR branch too);
+README links the site.
 
 **Still open:** (a) SPDX is declared `GPL-3.0-or-later` in `README.md`, `CONTRIBUTING.md` and
 `docs/FDROID.md` — switch to `GPL-3.0-only` if strict-v3 is wanted. (b) Re-upload `privacy_policy.html`
