@@ -6,6 +6,62 @@
 
 ---
 
+## 2026-08-10 (later) — v1.0.1: the build reproduced, then `check apk` found the last blocker
+
+**`fdroid build` PASSED, with reproducibility verified.** Pipeline 2746762194, after re-publishing the
+v1.0 APK built from the tagged commit:
+
+```
+INFO: Successfully built com.vadhod.apkextractor:3 from 8605b025...
+INFO: ...successfully verified
+INFO: compared built binary to supplied reference binary successfully
+```
+
+**Then `check apk` failed** — a job that had been *skipped* in every earlier run, because it only runs
+after a successful build. It was never reachable before:
+
+```
+CRITICAL: Found 1 problems ... ERROR Found extra signing block 'Dependency metadata'
+```
+
+AGP embeds a Play Console dependency manifest into the APK Signing Block, encrypted with a Google key
+(`scanner.py`: block id `0x504B4453`). Not fixable in metadata — it needed a source change, hence a new
+version.
+
+**v1.0.1 / versionCode 4** (packaging only, no behaviour change), commit
+`f8b8de45bc643115f6d535f287b67070b6e3bf4a`, tag `v1.0.1`:
+
+- `dependenciesInfo { includeInApk = false; includeInBundle = false }` — removes the Google blob.
+- `vcsInfo { include = false }` — stops AGP stamping the building commit into the APK. This is the root
+  cause of the earlier reproducibility mismatch, now gone for good.
+- Removed `foojay-resolver-convention` from `settings.gradle.kts` upstream, **so `prebuild` is gone from
+  the F-Droid recipe entirely**.
+- `UpdateCheckMode: Tags ^v[0-9.]+$` (regex, matching accepted recipes).
+
+**Order of operations, deliberately** (the §2.1 lesson): commit → tag → build → publish. Built in a clean
+clone at the tagged commit with Temurin JDK 21.
+
+**Verified locally by parsing the APK Signing Block, not by assuming:**
+
+```
+old.apk  0x7109871a v2 sig | 0x504b4453 Dependency metadata | 0x42726577 padding | vcs stamp: True
+new.apk  0x7109871a v2 sig |                                 0x42726577 padding | vcs stamp: False
+```
+
+The checker was sanity-checked against the old APK first — it correctly found the bad block there.
+Signing cert unchanged (`9a7ae254…`), `versionCode='4' versionName='1.0.1'`, release live and the live
+download's sha256 matches `9799c197…a5b4c7`.
+
+Metadata pushed to the MR branch; maintainers asked for a re-run.
+
+**Also added `docs/FDROID_PLAYBOOK.md`** — written from primary sources (`fdroidserver`'s
+`yaml_app_field_order` and `build_flags`, `scanner.py`, the Inclusion Policy, and the metadata of the 25
+most recently merged New App MRs). Notable finding: the three fastest merges (0.4–1.4 days) **all** use
+reproducible builds, and our 17 comments / 4 days is at the median — skipping reproducible builds is not
+the fast path.
+
+*App code unchanged apart from the build config; one signed release build (scratch clone, deleted).*
+
 ## 2026-08-10 — F-Droid MR !44998, review round 3: fixed the pipeline (real cause was the scanner)
 
 `@linsui` labelled the MR `waiting-on-response` with "Fix the pipeline"; `@seekme-seekyou` listed three
