@@ -21,10 +21,18 @@ android {
         applicationId = "com.vadhod.apkextractor"
         minSdk = 29
         targetSdk = 37
-        versionCode = 3
-        versionName = "1.0"
+        versionCode = 4
+        versionName = "1.0.1"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+    }
+
+    // AGP embeds a dependency manifest for Play Console into the APK Signing Block, compressed and
+    // encrypted with a Google key. F-Droid's `check apk` scanner rejects it as a non-free, opaque,
+    // non-reproducible blob ("extra signing block 'Dependency metadata'"). We don't need it.
+    dependenciesInfo {
+        includeInApk = false
+        includeInBundle = false
     }
 
     signingConfigs {
@@ -42,6 +50,12 @@ android {
         release {
             if (keystorePropertiesFile.exists()) {
                 signingConfig = signingConfigs.getByName("release")
+            }
+            // Don't stamp the git HEAD into META-INF/version-control-info.textproto. It makes the APK
+            // depend on which commit built it, which broke F-Droid's reproducible-build comparison when
+            // the release tag sat on a later commit than the build. See docs/FDROID_PLAYBOOK.md §2.2.
+            vcsInfo {
+                include = false
             }
             isMinifyEnabled = true
             isShrinkResources = true

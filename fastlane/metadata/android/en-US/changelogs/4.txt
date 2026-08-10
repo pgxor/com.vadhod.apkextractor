@@ -1,0 +1,6 @@
+Packaging-only release. No functional changes.
+
+Removed the Google dependency-metadata block and the git-commit stamp from the APK, so the build is
+fully reproducible and free of opaque, proprietary data. Dropped an unused Gradle toolchain plugin.
+
+The About screen now states the licence as GPL-3.0-or-later, matching the LICENSE file.
