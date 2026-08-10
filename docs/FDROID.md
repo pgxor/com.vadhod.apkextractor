@@ -91,8 +91,6 @@ AutoName: APK Extractor
 
 RepoType: git
 Repo: https://github.com/pgxor/com.vadhod.apkextractor.git
-Binaries: 
-  https://github.com/pgxor/com.vadhod.apkextractor/releases/download/v%v/vadhod-apk-extractor-v%v.apk
 
 Builds:
   - versionName: '1.0'
@@ -101,11 +99,7 @@ Builds:
     subdir: app
     gradle:
       - yes
-    prebuild:
-      - sed -i '/foojay-resolver/d' ../settings.gradle.kts
-      - echo "org.gradle.java.home=/usr/lib/jvm/java-21-openjdk-amd64" >> ../gradle.properties
-
-AllowedAPKSigningKeys: 9a7ae254b76d1d77aa91a14b144bfb49ce7ae6734bd3ff64d63296a6c04d918d
+    prebuild: sed -i '/foojay-resolver/d' ../settings.gradle.kts
 
 AutoUpdateMode: Version
 UpdateCheckMode: Tags
@@ -113,17 +107,20 @@ CurrentVersion: '1.0'
 CurrentVersionCode: 3
 ```
 
-Both `prebuild` lines are **not optional** — see §6.1 and §6.2.
+The `prebuild` line is **not optional** — see §6.1. There is no `Binaries`/`AllowedAPKSigningKeys`:
+F-Droid signs this with its own key (§5.3).
 
 **The formatting is machine-generated, not stylistic.** F-Droid's `fdroid rewritemeta` CI job rewrites
-the file and fails if the result differs from what is committed. Three things it insists on, all of them
+the file and fails if the result differs from what is committed. Things it insists on, all of them
 non-obvious:
 
 - `AutoName` (the launcher label read from the manifest) sits above `RepoType`, blank line either side.
 - Inside a `Builds` entry, `gradle` comes **before** `prebuild` — the field order is fixed by
   `fdroidserver`, not by the file.
-- `Binaries:` is long enough to wrap, so the tool emits the key with a **trailing space** and the URL
-  indented on the next line. That trailing space is load-bearing; stripping it fails the job.
+- A single-command `prebuild` is a plain scalar on one line, **not** a one-item list. Two or more
+  commands stay a list.
+- A `Binaries:` URL long enough to wrap is emitted as the key **with a trailing space**, URL indented on
+  the next line. That trailing space is load-bearing. (No longer used here, but it cost a CI round.)
 
 When in doubt, do not guess — read the diff the `checkupdates` / `fdroid rewritemeta` job prints and copy
 it verbatim.
@@ -136,18 +133,9 @@ Reviewer `@seekme-seekyou` asked for four changes, all applied:
    description now follows it.
 2. **Full commit hash, not the tag** — `commit:` is the 40-char SHA, not `v1.0`. Tags can move; hashes
    can't. `UpdateCheckMode: Tags` still drives auto-update.
-3. **Reproducible builds** — `Binaries:` (note the `%v` placeholder = versionName) plus
-   `AllowedAPKSigningKeys:` (our signing cert SHA-256, lowercase hex, no colons). F-Droid rebuilds from
-   source and, if byte-identical, ships **our** signed APK, so users can move between the GitHub release
-   and F-Droid without uninstalling. **Reproducibility is unverified** — we have no Linux/Docker
-   environment to run `fdroid build`. If it doesn't reproduce we rebuild and re-publish the release;
-   the fallback is dropping `Binaries` and letting F-Droid sign. Declining reproducible builds at
-   inclusion time is the *irreversible* choice, which is why it was enabled.
+3. **Reproducible builds** — `Binaries:` plus `AllowedAPKSigningKeys:` were added here. **Withdrawn in
+   round 4** — see §5.3.
 4. **JDK 21** — see §6.1; the first attempt at this was wrong and was replaced in round 3.
-
-**Release-asset naming is now load-bearing.** `Binaries` expands to
-`.../releases/download/v<versionName>/vadhod-apk-extractor-v<versionName>.apk`. Every future release
-must keep that tag and asset-name pattern or reproducible-build verification breaks.
 
 ### 5.2 Review feedback, round 3 (2026-08-10)
 
@@ -163,6 +151,60 @@ directly turned up a fourth, which was the one actually breaking the build.
 
 Items 1–3 were taken from the diff printed by the `checkupdates` job (`fdroid rewritemeta` output),
 so they are the tool's own formatting rather than a reading of the docs.
+
+### 5.3 Round 4 (2026-08-10): the build reproduced; reproducible builds withdrawn anyway
+
+`@linsui` applied a suggestion dropping the JDK-21 `prebuild` line (leaving only the foojay `sed`) and
+pushed it, which triggered the first real pipeline in `fdroid/fdroiddata`: **2746352428**.
+
+**8 of 9 jobs passed.** The scanner passed, the app built, and the rebuild was compared against the
+published APK. It differed on exactly one file:
+
+```
+diff -r .../META-INF/version-control-info.textproto
+<   revision: "0dd05b39469498c8d4d7fb073cdca45d06c5ad28"
+---
+>   revision: "8605b0254e06734199fdd92cb274dcf2e2c6659a"
+```
+
+**Every other byte matched.** The build is reproducible.
+
+The cause is AGP's `vcsInfo`, which stamps the git HEAD SHA into the APK. The published binary was built
+on 27 Jul at `0dd05b39` — the commit that shipped to Play. The `v1.0` tag was applied on 6 Aug to
+`8605b025`, a commit that only marks `gradlew` executable for GitHub Actions. There is no source
+difference:
+
+```bash
+git diff --stat 0dd05b39 8605b025 -- app/ gradle/ *.kts gradle.properties   # empty
+```
+
+Pointing `commit:` at `0dd05b39` would have been the cheap fix and is **wrong**: that commit predates
+both `LICENSE` and the `fastlane/` folder, so the app would lose its store listing and the license file
+would not be present at the build commit.
+
+**Decision (user's call): drop `Binaries` and `AllowedAPKSigningKeys`; let F-Droid sign.** The
+alternative — rebuild at `8605b025` and re-publish the GitHub release asset — was offered and declined,
+to avoid holding the MR on a re-release and to avoid committing to keep a `Binaries` URL matching on
+every future version.
+
+**Consequences, so nobody is surprised later:**
+
+- The F-Droid build will **not** install over the GitHub or Play builds. Users must uninstall to switch.
+- F-Droid treats declining at inclusion time as effectively permanent. Re-enabling later is a
+  conversation with the maintainers, not a metadata edit.
+
+**Before revisiting this**, add to `app/build.gradle.kts`:
+
+```kotlin
+buildTypes {
+    release {
+        vcsInfo { include = false }   // APK stops depending on which commit built it
+    }
+}
+```
+
+That removes the entire class of failure — with it, the tag no longer has to sit on the exact commit the
+binary was built from.
 
 Before opening the MR, validate it locally with F-Droid's own tooling:
 
@@ -201,8 +243,7 @@ It leaves an empty `plugins { }` block, which is valid Kotlin DSL.
 
 **Worth doing upstream.** The plugin is dead weight here and should be dropped from
 `settings.gradle.kts` in a future release, at which point this `prebuild` line can go. It was left in
-place for v1.0 because `commit:` is pinned to the published tag and the release APK must stay
-byte-comparable for reproducible-build verification.
+place for v1.0 only because `commit:` is pinned to an already-published tag.
 
 ### 6.2 JDK selection — the daemon-JVM criteria file is deleted for you
 

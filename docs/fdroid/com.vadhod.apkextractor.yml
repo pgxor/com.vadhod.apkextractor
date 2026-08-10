@@ -12,8 +12,6 @@ AutoName: APK Extractor
 
 RepoType: git
 Repo: https://github.com/pgxor/com.vadhod.apkextractor.git
-Binaries: 
-  https://github.com/pgxor/com.vadhod.apkextractor/releases/download/v%v/vadhod-apk-extractor-v%v.apk
 
 Builds:
   - versionName: '1.0'
@@ -22,11 +20,7 @@ Builds:
     subdir: app
     gradle:
       - yes
-    prebuild:
-      - sed -i '/foojay-resolver/d' ../settings.gradle.kts
-      - echo "org.gradle.java.home=/usr/lib/jvm/java-21-openjdk-amd64" >> ../gradle.properties
-
-AllowedAPKSigningKeys: 9a7ae254b76d1d77aa91a14b144bfb49ce7ae6734bd3ff64d63296a6c04d918d
+    prebuild: sed -i '/foojay-resolver/d' ../settings.gradle.kts
 
 AutoUpdateMode: Version
 UpdateCheckMode: Tags

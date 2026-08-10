@@ -62,9 +62,55 @@ re-offering the `export JAVA_HOME=…` alternative.
 MR), `docs/FDROID.md` §5 (formatting rules + why they are machine-generated), new §5.2 (round-3 table),
 §6.1 rewritten for the foojay scanner error, §6.2 rewritten for JDK selection, old §6.3 → §6.4.
 
-**Still open:** the maintainer's preference between `org.gradle.java.home` and `export JAVA_HOME`; and
-**reproducibility remains unverified** — no Linux environment here, so the buildserver run is the first
-real test. If it does not match, re-publish the release to match rather than fall back to F-Droid signing.
+**Round 4, same day — first real pipeline, and the reproducibility decision.**
+
+`@linsui` applied a suggestion dropping the JDK-21 `prebuild` line (leaving only the foojay `sed`) and
+pushed it, triggering the first pipeline to actually run in `fdroid/fdroiddata`: **2746352428**.
+
+**8 of 9 jobs passed.** `checkupdates`, `fdroid rewritemeta`, `fdroid lint`, `schema validation`,
+`check source code`, `git redirect`, `tools check scripts` — all green. The scanner passed, so the foojay
+fix worked. The app **built successfully on the buildserver**, which also settles §6.3: Gradle 9.6.1 /
+AGP 9.3.1 / `compileSdk 37` are supported there, and no explicit JDK pin was needed.
+
+**The build reproduced.** The comparison against the published APK differed on exactly one file:
+
+```
+META-INF/version-control-info.textproto
+<   revision: "0dd05b39469498c8d4d7fb073cdca45d06c5ad28"
+---
+>   revision: "8605b0254e06734199fdd92cb274dcf2e2c6659a"
+```
+
+Every other byte matched. Cause: AGP's `vcsInfo` stamps the git HEAD SHA into the APK. The published
+binary was built 27 Jul at `0dd05b39` (the commit that shipped to Play); `v1.0` was tagged 6 Aug on
+`8605b025`, which only marks `gradlew` executable. `git diff 0dd05b39 8605b025 -- app/ gradle/ *.kts
+gradle.properties` is **empty** — no source difference, which is why everything else matched.
+
+Verified `META-INF/version-control-info.textproto` in the published APK contains only `system`,
+`local_root_path: "$PROJECT_DIR"` (normalised) and `revision` — so the revision is the only field that
+could ever mismatch.
+
+**Rejected:** pointing `commit:` at `0dd05b39`. That commit predates both `LICENSE` and `fastlane/`, so
+the app would lose its store listing and the licence file at the build commit.
+
+**Decision (user's, after being offered the alternatives): drop `Binaries` and `AllowedAPKSigningKeys`
+and let F-Droid sign.** A rebuild at `8605b025` + re-publishing the GitHub release asset was prepared
+(clean clone at the tag, keystore ready) but **not run** — the user stopped it and chose F-Droid signing
+instead, to avoid holding the MR on a re-release and to avoid committing to keep a `Binaries` URL
+matching on every future version. Scratch clone deleted; no signing key was used and nothing was
+uploaded.
+
+**Consequences to remember:** the F-Droid build will not install over the GitHub or Play builds (users
+must uninstall to switch), and F-Droid treats declining reproducible builds at inclusion time as
+effectively permanent.
+
+**Before revisiting it**, add `vcsInfo { include = false }` to the `release` build type — that removes
+this entire class of failure, since the APK then no longer depends on which commit built it.
+
+Pushed the trimmed metadata to the MR branch, rewrote the MR description (unchecked Reproducible Builds,
+checked "builds with `fdroid build`", replaced the JDK section), and posted the decision on the MR.
+
+**Still open:** maintainer merge. Nothing further required on our side.
 
 *No app code changed; no build run this session.*
 
