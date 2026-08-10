@@ -6,6 +6,70 @@
 
 ---
 
+## 2026-08-10 — F-Droid MR !44998, review round 3: fixed the pipeline (real cause was the scanner)
+
+`@linsui` labelled the MR `waiting-on-response` with "Fix the pipeline"; `@seekme-seekyou` listed three
+metadata items. Rather than work from the comments alone, pulled the failed job logs via the GitLab API —
+which surfaced a **fourth** problem that was the actual build failure and that nobody had named.
+
+**Jobs in pipeline `2741157600`:** `fdroid lint`, `schema validation`, `check source code`,
+`tools check scripts`, `git redirect` ✅ · `checkupdates`, `fdroid rewritemeta`, `fdroid build` ❌.
+
+**1. Metadata formatting (items 1–3) — copied verbatim from the `checkupdates` job's own diff**, which
+prints what `fdroid rewritemeta` would write. Not guessed:
+
+- `AutoName: APK Extractor` added above `RepoType`, blank line either side. It resolves to the *launcher
+  label* from the manifest, not the Play name. Left as-is rather than adding a `Name:` override, because
+  `fastlane/.../title.txt` (= "Vadhod APK Extractor") is what F-Droid actually displays.
+- Inside the `Builds` entry, **`gradle` must come before `prebuild`** — field order is fixed by
+  `fdroidserver`, not by the file.
+- `Binaries:` is long enough to wrap, so the tool emits the key **with a trailing space** and the URL
+  indented beneath. The trailing space is load-bearing; verified against `metadata/com.geeksville.mesh.yml`
+  in fdroiddata master with `cat -A`.
+
+**2. The real build failure** (job `15773037181`) — the source scanner, before Gradle ever ran:
+
+```
+ERROR: Found usual suspect 'org.gradle.toolchains.foojay-resolver' at settings.gradle.kts
+ERROR: Could not build app com.vadhod.apkextractor: Can't build due to 1 error while scanning
+```
+
+`settings.gradle.kts` carries `foojay-resolver-convention` from the Android Studio project template.
+Confirmed by grep that **nothing in this project declares a Java toolchain** — the only Java config is
+`sourceCompatibility`/`targetCompatibility = VERSION_11` — so the plugin is dead weight and removing it
+cannot alter build output. Fixed with the standard fdroiddata idiom (matches `metadata/es.pile.yml`):
+`sed -i '/foojay-resolver/d' ../settings.gradle.kts`. Dry-run on a copy confirmed it leaves a valid empty
+`plugins { }` block. **Should be dropped upstream in a future release**; kept as `prebuild` for v1.0
+because `commit:` is pinned to the published tag and the release APK must stay byte-comparable.
+
+**3. JDK 21 — the previous two answers were both wrong.** The same log shows the scanner deletes the file
+the old `prebuild` was `sed`-ing:
+
+```
+INFO: Removing gradle-daemon-jvm.properties at gradle/gradle-daemon-jvm.properties
+```
+
+So that line never did anything, and the daemon would have run on the buildserver's default JDK. Replaced
+with `echo "org.gradle.java.home=/usr/lib/jvm/java-21-openjdk-amd64" >> ../gradle.properties`, which pins
+JDK 21 outright and survives the scanner (path verified in use by `metadata/com.itsfrz.tictactoe.yml`).
+
+**Pushed** to the fork branch `com.vadhod.apkextractor` via the GitLab files API (base64, to preserve the
+trailing space), verified on the branch with `cat -A`. Replied on discussion
+`83b9dfd567a778e69d26ef08f78ac9ff4bf880ff` explaining all four, correcting my earlier JDK claim, and
+re-offering the `export JAVA_HOME=…` alternative.
+
+**Repo docs synced:** `docs/fdroid/com.vadhod.apkextractor.yml` (source of truth, kept in step with the
+MR), `docs/FDROID.md` §5 (formatting rules + why they are machine-generated), new §5.2 (round-3 table),
+§6.1 rewritten for the foojay scanner error, §6.2 rewritten for JDK selection, old §6.3 → §6.4.
+
+**Still open:** the maintainer's preference between `org.gradle.java.home` and `export JAVA_HOME`; and
+**reproducibility remains unverified** — no Linux environment here, so the buildserver run is the first
+real test. If it does not match, re-publish the release to match rather than fall back to F-Droid signing.
+
+*No app code changed; no build run this session.*
+
+---
+
 ## 2026-08-06 — Public-repo prep: README, GPL-3.0 LICENSE, F-Droid metadata, GitHub release
 
 App is **live on Google Play** (`versionCode` 3, `versionName` 1.0, published 27 Jul 2026). This session
