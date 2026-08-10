@@ -25,3 +25,10 @@ keystore.properties
 # app's lowercase `data/` source package on case-insensitive filesystems (Windows/macOS,
 # core.ignorecase=true), which silently un-tracks the whole data layer.
 /DATA/
+
+# Release artifacts belong on GitHub Releases, never in git.
+# A stray .zip in the tree is a fatal error for F-Droid's source scanner,
+# and a stray .apk gets silently deleted by it. See docs/FDROID_PLAYBOOK.md.
+release/*.apk
+release/*.aab
+release/*.zip
