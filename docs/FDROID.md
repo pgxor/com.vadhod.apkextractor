@@ -14,7 +14,7 @@ Based on the [Submitting to F-Droid Quick Start Guide](https://f-droid.org/en/do
 | Only FOSS dependencies (no Firebase, no GMS) | ✅ see §2 |
 | Author notified / does not oppose inclusion | ✅ we are the author |
 | Fastlane metadata in the repo | ✅ see §3 |
-| A git tag on each release commit | ✅ `v1.0` pushed |
+| A git tag on each release commit | ✅ `v1.0`, `v1.0.1` pushed |
 
 ## 2. Dependency audit
 
@@ -45,7 +45,8 @@ fastlane/metadata/android/en-US/
 ├── short_description.txt          (67 chars — limit is 80)
 ├── full_description.txt
 ├── changelogs/
-│   └── 3.txt                      (filename = versionCode — limit is 500 chars)
+│   ├── 3.txt                      (filename = versionCode — limit is 500 chars)
+│   └── 4.txt
 └── images/
     ├── icon.png                   (512×512)
     └── phoneScreenshots/
@@ -266,7 +267,8 @@ It leaves an empty `plugins { }` block, which is valid Kotlin DSL.
 
 **Worth doing upstream.** The plugin is dead weight here and should be dropped from
 `settings.gradle.kts` in a future release, at which point this `prebuild` line can go. It was left in
-place for v1.0 only because `commit:` is pinned to an already-published tag.
+place for v1.0 only because `commit:` was pinned to an already-published tag. **Done in 1.0.1** — the
+plugin is gone upstream and `prebuild` has been removed from the recipe.
 
 ### 6.2 JDK selection — the daemon-JVM criteria file is deleted for you
 
