@@ -93,26 +93,55 @@ could ever mismatch.
 **Rejected:** pointing `commit:` at `0dd05b39`. That commit predates both `LICENSE` and `fastlane/`, so
 the app would lose its store listing and the licence file at the build commit.
 
-**Decision (user's, after being offered the alternatives): drop `Binaries` and `AllowedAPKSigningKeys`
-and let F-Droid sign.** A rebuild at `8605b025` + re-publishing the GitHub release asset was prepared
-(clean clone at the tag, keystore ready) but **not run** — the user stopped it and chose F-Droid signing
-instead, to avoid holding the MR on a re-release and to avoid committing to keep a `Binaries` URL
-matching on every future version. Scratch clone deleted; no signing key was used and nothing was
-uploaded.
+**Decision, reversed once.** The user first chose to drop `Binaries`/`AllowedAPKSigningKeys` and let
+F-Droid sign; that was pushed. `@linsui` then pushed back:
 
-**Consequences to remember:** the F-Droid build will not install over the GitHub or Play builds (users
-must uninstall to switch), and F-Droid treats declining reproducible builds at inclusion time as
-effectively permanent.
+> We can't switch for signing by F-Droid to reproducible build. The signature can't be changed like this
+> since the users can't get updates. You have to decide now if you want reproducible build.
 
-**Before revisiting it**, add `vcsInfo { include = false }` to the `release` build type — that removes
-this entire class of failure, since the APK then no longer depends on which commit built it.
+He is right — F-Droid cannot migrate an app from their key to ours later without breaking updates for
+everyone installed, so **inclusion time is the only moment this can be chosen**. Put back to the user
+with that new information; they chose reproducible builds and authorised the keystore build.
 
-Pushed the trimmed metadata to the MR branch, rewrote the MR description (unchecked Reproducible Builds,
-checked "builds with `fdroid build`", replaced the JDK section), and posted the decision on the MR.
+**Rebuild (authorised, `assembleRelease` at `8605b025` in a scratch clone, Temurin JDK 21):**
 
-**Still open:** maintainer merge. Nothing further required on our side.
+```
+BUILD SUCCESSFUL in 5m 2s
+entries: published=121 rebuilt=121
+entry names+order identical: True
+differing entries: 1
+  - META-INF/version-control-info.textproto   (now revision 8605b025)
+Signer #1 certificate SHA-256 digest: 9a7ae254…04d918d   (matches AllowedAPKSigningKeys)
+```
 
-*No app code changed; no build run this session.*
+| | |
+| --- | --- |
+| Old APK SHA-256 | `71887d4321023bd5c6ac1d1b3ffb8e42a3c44ef3e5a655abc9dd5364790bda7d` |
+| New APK SHA-256 | `1f574b1fc184436740f84705ba24d803c2cd952010318f9a38fd7202abe7fa99` |
+
+Re-published to the GitHub `v1.0` release under the **same tag and filename** (`gh release upload
+--clobber`), so the `Binaries` URL is unchanged. Re-verified by downloading the live asset: hash matches
+and the embedded revision is `8605b025`. Updated `release/SHA256SUMS.txt`, `release/RELEASE_NOTES_v1.0.md`
+and the GitHub release body (verified the live body was character-identical to the notes file first).
+Metadata restored on the MR branch, MR description updated, maintainers asked to re-run.
+
+**Release-asset naming is load-bearing again.** Every future release must keep the
+`v<versionName>` tag + `vadhod-apk-extractor-v<versionName>.apk` asset name, **and be built from the
+exact commit the tag points at**.
+
+**Do before the next release:** add `vcsInfo { include = false }` to the `release` build type. That
+removes this entire class of failure, since the APK then no longer records which commit built it.
+
+**Correction issued.** I had told the maintainers our empty fork pipelines were caused by
+`app_verification_rules` gating on `changes: metadata/**/*` being unevaluable on forks. **That was
+wrong** — MR !45296 runs all 9 jobs on another fork of fdroiddata. Compared both forks: `jobs_enabled`,
+`builds_access_level`, `shared_runners_enabled`, `ci_config_path` and visibility are identical. Ours
+fail at *creation* ("Pipeline creation failed"), `started_at: null`, 0 jobs. **Cause unknown** — said so
+on the MR rather than offering a second guess. Pressing "Run pipeline" on the fork only adds red rows.
+
+**Still open:** maintainer re-run and merge. Nothing further required on our side.
+
+*No app code changed. One release build run (scratch clone, deleted afterwards).*
 
 ---
 
