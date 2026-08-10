@@ -95,23 +95,23 @@ Binaries:
   https://github.com/pgxor/com.vadhod.apkextractor/releases/download/v%v/vadhod-apk-extractor-v%v.apk
 
 Builds:
-  - versionName: '1.0'
-    versionCode: 3
-    commit: 8605b0254e06734199fdd92cb274dcf2e2c6659a
+  - versionName: 1.0.1
+    versionCode: 4
+    commit: f8b8de45bc643115f6d535f287b67070b6e3bf4a
     subdir: app
     gradle:
       - yes
-    prebuild: sed -i '/foojay-resolver/d' ../settings.gradle.kts
 
 AllowedAPKSigningKeys: 9a7ae254b76d1d77aa91a14b144bfb49ce7ae6734bd3ff64d63296a6c04d918d
 
 AutoUpdateMode: Version
-UpdateCheckMode: Tags
-CurrentVersion: '1.0'
-CurrentVersionCode: 3
+UpdateCheckMode: Tags ^v[0-9.]+$
+CurrentVersion: 1.0.1
+CurrentVersionCode: 4
 ```
 
-The `prebuild` line is **not optional** — see §6.1. `Binaries` + `AllowedAPKSigningKeys` enable
+There is no longer a `prebuild` line: the foojay plugin was removed upstream in 1.0.1 (§6.1).
+`Binaries` + `AllowedAPKSigningKeys` enable
 reproducible builds; see §5.3 for why that choice is irreversible.
 
 **The formatting is machine-generated, not stylistic.** F-Droid's `fdroid rewritemeta` CI job rewrites
