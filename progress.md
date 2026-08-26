@@ -6,6 +6,45 @@
 
 ---
 
+## 2026-08-26 - v1.0.2 released to GitHub and pushed to the F-Droid MR
+
+**Released.** Tag `v1.0.2` -> commit `67d3ece813dff52dda362088f9aa16012077a6f8`. GitHub release:
+https://github.com/pgxor/com.vadhod.apkextractor/releases/tag/v1.0.2
+
+Release APK verified before publishing, every check that bit us in an earlier round:
+
+| Check | Result |
+| --- | --- |
+| Signer SHA-256 | `9a7ae254...d918d` - matches `AllowedAPKSigningKeys` |
+| APK Signing Block ids | only `0x7109871a` (v2 sig) + `0x42726577` (padding). **No `0x504b4453` Dependency metadata** |
+| `META-INF/version-control-info.textproto` | absent (`vcsInfo { include = false }` holding) |
+| `assets/licenses/OFL-1.1-Nunito.txt` | present, 4385 bytes |
+| Manifest | versionCode 5, versionName 1.0.2, minSdk 29, targetSdk 37 |
+| Permissions | `QUERY_ALL_PACKAGES` + own `DYNAMIC_RECEIVER_NOT_EXPORTED_PERMISSION` only. No INTERNET |
+| `Binaries:` URL | HTTP 200 at the exact `%v`-substituted path |
+
+`sha256(vadhod-apk-extractor-v1.0.2.apk)` =
+`5cd3211e0c0ba57a329bd89cfbfc5b1351eeda7300cd22b59661b131647ddf55`
+`sha256(vadhod-apk-extractor-v1.0.2-source.zip)` =
+`f26f1ad4fc9a3656e097e7bffa25830d62add66fac106e251df38c3e0b889286`
+
+**fdroiddata MR !44998 updated** - fork commit `0a8aab4`, five fields only: `versionName` 1.0.1->1.0.2,
+`versionCode` 4->5, `commit` -> 67d3ece, `CurrentVersion`, `CurrentVersionCode`. File stayed 920 bytes,
+`Binaries: ` trailing space preserved. Verified before pushing with the real tooling: `fdroid
+rewritemeta` (ruamel 0.18.10, the version Debian trixie/CI ships) produced byte-identical content
+modulo CRLF, and `fdroid lint` exited 0. Pipeline #2791265006 triggered on the fork.
+
+Kept a **single** `Builds:` entry rather than appending 1.0.2 alongside 1.0.1: the app is not in the
+repo yet, so nothing depends on 1.0.1 existing, and 1.0.1 is precisely the build with the four bugs
+the reviewers found. Building and publishing it would be pointless and doubles CI risk.
+
+**Note for future sessions - the /config recap tool.** During this session it autonomously created
+commits (`b1c5cec`, `4378a78`), pushed them to GitHub, then ran `git pull --tags` and pushed a merge
+commit, all mid-release. One message claimed the app was "merged into F-Droid", which was false and
+would have sat permanently next to the commit F-Droid pins. History was rewritten to a single clean
+release commit (user ran the force-push; the sandbox classifier blocks `reset --hard` + `push
+--force`). If recaps are still on, disable them before any release work.
+
 ## 2026-08-25 - v1.0.2: all four F-Droid review findings verified and fixed
 
 The F-Droid reviewers came back on !44998. **Both reviews passed.** @andrewpozdnakov7: "PASS WITH
