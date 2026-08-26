@@ -6,6 +6,85 @@
 
 ---
 
+## 2026-08-25 - v1.0.2: all four F-Droid review findings verified and fixed
+
+The F-Droid reviewers came back on !44998. **Both reviews passed.** @andrewpozdnakov7: "PASS WITH
+NOTES" - GPL-3.0 source, full commit pin, signing-key allow-list, green CI, no tracker/ads/root/
+undeclared anti-feature confirmed. @MiggiV2 tested v1.0.1 (versionCode 4) on a physical Redmi Note 8T
+(Android 13, arm64-v8a), confirmed the upstream binary is byte-identical to the pipeline reference
+(sha256 `9799c197...`), the allowed signer matches `AllowedAPKSigningKeys`, and VirusTotal is 0/67.
+Policy compliance, permissions and "no network connections" all passed - they polled
+`/proc/net/tcp{,6}` for our uid for 24s on cold start and saw no sockets.
+
+They also filed **four device-level bugs**. All four were verified against the source before touching
+anything, with the mechanism traced through the library sources rather than assumed:
+
+| # | Finding | Verdict | Root cause |
+| --- | --- | --- | --- |
+| 1 | Contents list unreadable in dark theme | CONFIRMED | `Scaffold(containerColor = Transparent)` -> `contentColorFor(Transparent)` matches nothing in the ColorScheme -> `.takeOrElse { LocalContentColor.current }` -> `compositionLocalOf { Color.Black }` (material3 `ContentColor.kt:33`). Two `Text`s had no explicit colour: the "Contents" `SectionHeader` and every `EntryRow` name. |
+| 2 | Split export lands as `.apks.apk` | CONFIRMED | `ApkExtractor.extractBundle` asked for a `.apks` name with `APK_MIME`. `FileUtils.splitFileName` finds no registered type for "apks" and `extFromMimeType` = "apk", they disagree, so DocumentsProvider appends `.apk`. |
+| 3 | Settings not scrollable | CONFIRMED | Plain `Column`, no `verticalScroll` anywhere in the file. |
+| 4 | System-bar icons ignore the in-app theme | CONFIRMED | `enableEdgeToEdge()` (no args) uses `SystemBarStyle.auto`, whose `detectDarkMode` reads `resources.configuration.uiMode & UI_MODE_NIGHT_MASK` - the *system* night setting, not `ThemeMode`. Called once in `onCreate`, never revisited. |
+
+**Fixes.** Finding 1 was fixed once in the design system rather than at the two call sites:
+`GradientBackground` now wraps its content in `CompositionLocalProvider(LocalContentColor provides
+onSurface)`, which closes the whole class of bug for every screen. Finding 2: bundles now request
+`BUNDLE_MIME` (`application/octet-stream`), the only type that agrees with an unregistered extension.
+Finding 3: `.verticalScroll(rememberScrollState())`, applied after the Scaffold inset so the top bar
+stays put. Finding 4: `isDarkTheme(themeMode)` was extracted from `VadhodTheme` and is now shared with
+`MainActivity`, which re-applies `enableEdgeToEdge` from a `LaunchedEffect(dark)` with an explicit
+`detectDarkMode = { dark }`; the library's internal nav-bar scrim constants are repeated verbatim so
+overriding detection does not also change the scrim. Also swapped `RoundedCornerShape(26.dp)` in
+`SettingsScreen` for `MaterialTheme.shapes.large` (rules.md D forbids ad-hoc radii in feature code;
+the values were already identical, so no visual change).
+
+**Why CI never caught finding 2:** `ApkExtractorTest` uses a temp-dir sink that writes the requested
+name verbatim and does not emulate SAF's mime/extension reconciliation. Added
+`bundle_requests_a_mime_type_saf_will_not_rewrite_the_extension`, a recording sink that asserts the
+name/mime pairing for both formats. Two secondary consequences of the same bug are now also gone:
+`SafApkSink.uniqueName` was probing for a name that never existed on disk, so our collision handling
+was a silent no-op for bundles (SAF's own de-duplication was covering for it).
+
+**Verification:** `./gradlew assembleDebug testDebugUnitTest` BUILD SUCCESSFUL, all unit tests pass
+including the new guard. Bumped to `versionName` 1.0.2 / `versionCode` 5; CHANGELOG.md and
+`fastlane/.../changelogs/5.txt` (470 chars, limit 500) written.
+
+**Note on the local build environment:** the first `assembleDebug` failed with
+`jlink executable ...redhat.java.../jre/.../jlink.exe does not exist`. A stale Gradle daemon had been
+started against the VS Code Red Hat *JRE* despite `toolchainVendor=ADOPTIUM` in
+`gradle/gradle-daemon-jvm.properties`. `./gradlew --stop` and rebuild fixed it. Not a code problem,
+and not something F-Droid's builders can hit - noting it so a future session does not re-diagnose it.
+
+**Also in 1.0.2 - an About dialog** (user request, same session). The About card in Settings is now
+tappable and opens a compact `AlertDialog`: launcher icon, name, `versionName (versionCode)` read
+from `PackageManager` (not `BuildConfig`, so the `buildConfig` build feature stays off for two
+fields), a short description, the no-internet/no-tracking line, then Developer / Contact / Licence
+rows, third-party credits and `Copyright (C) 2026 Parjanya Gala`. The contact address opens the
+device email app with `ACTION_SENDTO` + `mailto:` and the version pre-filled in the subject, wrapped
+in `runCatching` with a toast fallback that still shows the address - a hand-off to another app, no
+network call, no permission. Card subtitle keeps "GPL-3.0-or-later" visible without opening the
+modal, which is what the reviewer's checklist was looking for. Dialog visibility is
+`rememberSaveable` so rotation does not dismiss it, and the content column scrolls for large font
+scales - the same mistake the Settings screen had just been fixed for.
+
+The detail screen's private `InfoRow` was promoted to a shared `LabeledRow` in
+`core/design/components/Common.kt` and reused by the dialog, rather than writing the row twice
+(rules.md D). It sets colours explicitly on both halves - the old `InfoRow` let the value inherit
+`LocalContentColor`, which is precisely the trap behind finding 1 - and gives the value `weight(1f)`
+so a long value wraps instead of pushing the label off-screen.
+
+**Known gap, not fixed:** the bundled `res/font/nunito.ttf` has no OFL notice anywhere in the repo.
+SIL OFL 1.1 requires the copyright notice and licence text to ship with the font. The About dialog
+credits the typeface and licence, but a `NOTICE` / `THIRD_PARTY_LICENSES` file is still owed - worth
+doing before the fdroiddata merge. Also noticed `libraries-used.md` is stale in two places: it still
+lists `foojay-resolver-convention` (removed in v1.0.1) and claims `material-icons-extended` is not
+used when it is a declared dependency.
+
+**Still to do for the release:** tag `v1.0.2` first, build the signed release APK *at the tag* (see
+FDROID_PLAYBOOK.md 2.1 - the tag must exist before the build or reproducibility breaks), publish the
+GitHub release, then update `docs/fdroid/com.vadhod.apkextractor.yml` (`versionName`, `versionCode`,
+`commit`, `CurrentVersion`, `CurrentVersionCode`) and push to the fdroiddata MR.
+
 ## 2026-08-10 (later) — v1.0.1: the build reproduced, then `check apk` found the last blocker
 
 **`fdroid build` PASSED, with reproducibility verified.** Pipeline 2746762194, after re-publishing the

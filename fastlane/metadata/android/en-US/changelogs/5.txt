@@ -1,0 +1,7 @@
+New: tap About in Settings for a compact dialog with the version, credits, licence and contact.
+
+Fixes from the F-Droid review:
+- The APK contents list was unreadable in dark theme.
+- Split apps saved as "name.apks.apk" instead of "name.apks". The archive itself was always correct.
+- Settings could not be scrolled, so the About card was unreachable.
+- System bar icons ignored the in-app theme.

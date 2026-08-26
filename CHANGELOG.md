@@ -5,6 +5,49 @@ All notable changes to this project are documented here.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and this project
 adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.0.2] — 2026-08-25
+
+Bug-fix release (`versionCode` 5) addressing every finding from the F-Droid inclusion review
+([fdroiddata!44998](https://gitlab.com/fdroid/fdroiddata/-/merge_requests/44998)). Thanks to
+@MiggiV2 for the device testing that turned these up.
+
+### Added
+
+- **An About dialog.** Tapping the About card in Settings now opens a compact modal with the app
+  icon, version and build number, a short description, the developer and contact address, the
+  licence, third-party credits and the copyright line. The contact address opens the device's email
+  app via `ACTION_SENDTO` with the version pre-filled in the subject — a hand-off to another app,
+  not a network call; this app still holds no `INTERNET` permission.
+
+### Fixed
+
+- **Unreadable APK contents list in dark theme.** Every screen sits in a `Scaffold` with a
+  transparent container so the pastel gradient shows through, but Material 3 resolves that to no
+  content colour and falls back to its hard-coded `Color.Black` default. The "Contents" header and
+  all entry names on the app detail screen were therefore painted pure black on the dark
+  background, at roughly 1.3:1 contrast. `GradientBackground` now publishes `onSurface` as the
+  content colour, fixing the whole class of bug for every screen at once.
+- **Split bundles were saved as `.apks.apk`.** The Storage Access Framework reconciles the
+  requested MIME type against the file name's extension and renames the file when they disagree.
+  Bundles asked for a `.apks` name with the APK MIME type, so Android appended `.apk`. Bundles now
+  request `application/octet-stream`, and the `.apks` name is written as intended. The archive
+  contents were always correct — only the name was wrong. Covered by a new regression test.
+- **The Settings screen could not be scrolled**, so the About card (app name and GPL-3.0-or-later
+  notice) was clipped below the screen edge and unreachable on shorter screens, and worse at large
+  font scales. It now scrolls.
+- **Status- and navigation-bar icons ignored the in-app theme.** `enableEdgeToEdge` detects dark
+  mode from the *system* night setting, so choosing Light on a system-dark device (or Dark on a
+  system-light one) left the system-bar icons the same colour as the app background, and changing
+  the theme in Settings never updated them. Bar appearance now follows the resolved app theme.
+
+### Changed
+
+- The Settings cards use the shared theme shape instead of a hard-coded corner radius (no visual
+  change; the values were already identical).
+- The key/value rows on the app detail screen moved to a shared `LabeledRow` design-system
+  component, now used by the About dialog too. Long values wrap instead of pushing the label
+  off-screen, and both halves set their colour explicitly rather than inheriting it.
+
 ## [1.0.1] — 2026-08-10
 
 Packaging-only release for F-Droid inclusion (`versionCode` 4). **No functional changes** — no

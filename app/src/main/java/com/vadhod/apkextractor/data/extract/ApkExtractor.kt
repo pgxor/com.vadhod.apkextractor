@@ -92,7 +92,11 @@ class ApkExtractor(private val dispatchers: DispatcherProvider) {
             throw FileNotFoundException("APK part missing: ${it.name}")
         }
 
-        val file = sink.create(apkFileName(app, "apks"), APK_MIME)
+        // Deliberately not APK_MIME. SAF reconciles the requested mime type against the display
+        // name extension: "apks" maps to no registered type, the APK mime type maps to "apk", so
+        // they disagree and DocumentsProvider renames the output to "<name>.apks.apk".
+        // application/octet-stream agrees with an unknown extension, so ".apks" survives verbatim.
+        val file = sink.create(apkFileName(app, "apks"), BUNDLE_MIME)
         val grandTotal = parts.sumOf { it.length() }.coerceAtLeast(1L)
         var written = 0L
         try {
@@ -137,6 +141,7 @@ class ApkExtractor(private val dispatchers: DispatcherProvider) {
 
     private companion object {
         const val APK_MIME = "application/vnd.android.package-archive"
+        const val BUNDLE_MIME = "application/octet-stream"
         const val BUFFER_SIZE = 64 * 1024
     }
 }

@@ -1,10 +1,12 @@
 package com.vadhod.apkextractor
 
 import android.content.Intent
+import android.graphics.Color as AndroidColor
 import android.net.Uri
 import android.os.Bundle
 import android.widget.Toast
 import androidx.activity.ComponentActivity
+import androidx.activity.SystemBarStyle
 import androidx.activity.compose.BackHandler
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.compose.setContent
@@ -26,6 +28,7 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.lifecycle.viewmodel.initializer
 import androidx.lifecycle.viewmodel.viewModelFactory
 import com.vadhod.apkextractor.core.design.theme.VadhodTheme
+import com.vadhod.apkextractor.core.design.theme.isDarkTheme
 import com.vadhod.apkextractor.core.model.AppEntry
 import com.vadhod.apkextractor.core.model.ExportFormat
 import com.vadhod.apkextractor.data.settings.Settings
@@ -43,6 +46,11 @@ import kotlinx.coroutines.withContext
 
 private enum class Route { LIST, DETAIL, SETTINGS }
 
+// androidx.activity's own defaults for the three-button navigation-bar scrim, which are internal to
+// that library. Repeated verbatim so overriding detectDarkMode does not also change the scrim.
+private val NAV_BAR_LIGHT_SCRIM = AndroidColor.argb(0xe6, 0xFF, 0xFF, 0xFF)
+private val NAV_BAR_DARK_SCRIM = AndroidColor.argb(0x80, 0x1b, 0x1b, 0x1b)
+
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         val splash = installSplashScreen()
@@ -58,6 +66,23 @@ class MainActivity : ComponentActivity() {
             val loaded = settings
             LaunchedEffect(loaded) { if (loaded != null) uiReady = true }
             if (loaded != null) {
+                // enableEdgeToEdge() above defaults to detecting dark mode from the *system* night
+                // setting, so an in-app Light theme on a system-dark device left the status-bar
+                // icons white on our cream background (and vice versa), and switching theme in
+                // Settings never updated them. Re-apply it against the resolved app theme.
+                val dark = isDarkTheme(loaded.themeMode)
+                LaunchedEffect(dark) {
+                    enableEdgeToEdge(
+                        statusBarStyle = SystemBarStyle.auto(
+                            AndroidColor.TRANSPARENT,
+                            AndroidColor.TRANSPARENT,
+                        ) { dark },
+                        navigationBarStyle = SystemBarStyle.auto(
+                            NAV_BAR_LIGHT_SCRIM,
+                            NAV_BAR_DARK_SCRIM,
+                        ) { dark },
+                    )
+                }
                 VadhodTheme(themeMode = loaded.themeMode) {
                     AppRoot(container = container, settings = loaded)
                 }

@@ -228,6 +228,10 @@ see <https://www.gnu.org/licenses/>.
 
 Full text: [`LICENSE`](LICENSE) · SPDX identifier: `GPL-3.0-or-later`
 
+The app bundles the **Nunito** typeface (Copyright 2014 The Nunito Project Authors), used under the
+SIL Open Font License 1.1. See [`THIRD_PARTY_LICENSES.md`](THIRD_PARTY_LICENSES.md); the full
+licence text also ships inside the APK.
+
 ---
 
 <div align="center">

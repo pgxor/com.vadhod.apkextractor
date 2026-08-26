@@ -67,6 +67,34 @@ class ApkExtractorTest {
         }
     }
 
+    /**
+     * Regression guard for the ".apks.apk" bug. SAF does not take the display name on trust: it
+     * compares the requested mime type against the name extension and, when they disagree, appends
+     * the mime type own extension instead. "apks" is not a registered extension, so pairing it with
+     * the APK mime type made DocumentsProvider write "<name>.apks.apk". An unknown extension only
+     * agrees with application/octet-stream, so the bundle must request that. The temp-dir sink used
+     * by the other tests writes the name verbatim, which is exactly why it never caught this.
+     */
+    @Test
+    fun bundle_requests_a_mime_type_saf_will_not_rewrite_the_extension() = runBlocking {
+        val base = tmp.newFile("base.apk").apply { writeBytes(Random.nextBytes(512)) }
+        val split = File(tmp.root, "split_config.arm64_v8a.apk").apply { writeBytes(Random.nextBytes(256)) }
+        val app = appEntry(base = base.path, splits = listOf(split.path))
+        val requested = mutableListOf<Pair<String, String>>()
+        val sink = RecordingSink(tmp.newFolder("out"), requested)
+
+        extractor.extract(app, ExportFormat.BundleApks, sink) {}
+        extractor.extract(app, ExportFormat.SingleBaseApk, sink) {}
+
+        val (bundleName, bundleMime) = requested[0]
+        assertTrue("bundle name should end in .apks, was $bundleName", bundleName.endsWith(".apks"))
+        assertEquals("application/octet-stream", bundleMime)
+
+        val (singleName, singleMime) = requested[1]
+        assertTrue("single name should end in .apk, was $singleName", singleName.endsWith(".apk"))
+        assertEquals("application/vnd.android.package-archive", singleMime)
+    }
+
     @Test
     fun missing_base_apk_returns_not_found() = runBlocking {
         val app = appEntry(base = File(tmp.root, "gone.apk").path)
@@ -130,6 +158,22 @@ class ApkExtractorTest {
     /** Real sink writing into [dir], so byte-for-byte and zip assertions run against actual files. */
     private class TempDirSink(private val dir: File) : ApkSink {
         override fun create(desiredName: String, mimeType: String): SinkFile {
+            val file = File(dir, desiredName)
+            return object : SinkFile {
+                override val displayName = desiredName
+                override fun openOutputStream(): OutputStream = file.outputStream()
+                override fun delete() { file.delete() }
+            }
+        }
+    }
+
+    /** Temp-dir sink that also records what name and mime type each call asked for. */
+    private class RecordingSink(
+        private val dir: File,
+        private val requested: MutableList<Pair<String, String>>,
+    ) : ApkSink {
+        override fun create(desiredName: String, mimeType: String): SinkFile {
+            requested += desiredName to mimeType
             val file = File(dir, desiredName)
             return object : SinkFile {
                 override val displayName = desiredName

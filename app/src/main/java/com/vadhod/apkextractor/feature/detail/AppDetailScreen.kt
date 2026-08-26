@@ -39,6 +39,7 @@ import androidx.compose.ui.unit.dp
 import com.vadhod.apkextractor.AppContainer
 import com.vadhod.apkextractor.core.design.components.AppIcon
 import com.vadhod.apkextractor.core.design.components.GradientBackground
+import com.vadhod.apkextractor.core.design.components.LabeledRow
 import com.vadhod.apkextractor.core.model.AppEntry
 import com.vadhod.apkextractor.core.model.ExportFormat
 import com.vadhod.apkextractor.core.util.formatBytes
@@ -176,14 +177,14 @@ private fun ActionButtons(
 private fun InfoCard(app: AppEntry) {
     Card {
         Column(modifier = Modifier.padding(18.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
-            InfoRow("Type", if (app.isSystem) "System app" else "User app")
-            InfoRow("Version", "${app.versionName ?: "?"} (${app.versionCode})")
-            InfoRow("Size", formatBytes(app.totalSizeBytes))
-            if (app.isSplit) InfoRow("Splits", "${app.splitApkPaths.size} config split(s)")
-            InfoRow("Min SDK", app.minSdk?.toString() ?: "—")
-            InfoRow("Target SDK", app.targetSdk?.toString() ?: "—")
-            InfoRow("Installed", formatDate(app.firstInstallTime))
-            InfoRow("Updated", formatDate(app.lastUpdateTime))
+            LabeledRow("Type", if (app.isSystem) "System app" else "User app")
+            LabeledRow("Version", "${app.versionName ?: "?"} (${app.versionCode})")
+            LabeledRow("Size", formatBytes(app.totalSizeBytes))
+            if (app.isSplit) LabeledRow("Splits", "${app.splitApkPaths.size} config split(s)")
+            LabeledRow("Min SDK", app.minSdk?.toString() ?: "—")
+            LabeledRow("Target SDK", app.targetSdk?.toString() ?: "—")
+            LabeledRow("Installed", formatDate(app.firstInstallTime))
+            LabeledRow("Updated", formatDate(app.lastUpdateTime))
         }
     }
 }
@@ -240,14 +241,6 @@ private fun EntryRow(entry: ApkEntryInfo) {
             style = MaterialTheme.typography.labelSmall,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
         )
-    }
-}
-
-@Composable
-private fun InfoRow(label: String, value: String) {
-    Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
-        Text(label, style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
-        Text(value, style = MaterialTheme.typography.bodyMedium, fontWeight = FontWeight.SemiBold)
     }
 }
 
