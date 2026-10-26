@@ -59,6 +59,7 @@
 | `androidx.activity:activity-compose` | `1.13.0` | 2026-06-08 | `ComponentActivity` + `setContent`, Activity Result APIs (SAF folder picker). |
 | `androidx.core:core-ktx` | `1.19.0` | 2026-06-08 | Core KTX extensions. |
 | `androidx.lifecycle:lifecycle-runtime-ktx` | `2.10.0` | 2026-06-08 | Lifecycle-aware coroutine scopes. |
+| `androidx.lifecycle:lifecycle-runtime-compose` | `2.10.0` (`strictly`) | 2026-10-26 | `LifecycleResumeEffect`, to re-check the app list on resume (issue #1). **Not new code:** it was already on the runtime classpath at exactly 2.10.0 via `lifecycle-viewmodel-compose`; declared explicitly so the version is visible and locked. Same lifecycle train as the two entries above; no version change. |
 
 ## 3. New libraries we are ADDING for this app (verified latest stable, 2026-06-08)
 

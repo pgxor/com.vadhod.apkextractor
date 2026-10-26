@@ -23,6 +23,9 @@ Nothing you do in the app ever leaves your device.
 - **Query all packages** (`QUERY_ALL_PACKAGES`): required so the app can list the applications
   installed on your device — the core function of an APK extractor. This information is only shown to
   you, on-device, and is never recorded or sent anywhere.
+- **Request uninstall** (`REQUEST_DELETE_PACKAGES`): lets the Uninstall button open Android's own
+  uninstall confirmation dialog. The app cannot remove anything by itself; you always confirm in the
+  system dialog.
 - **Storage Access Framework**: when you choose to export an APK, the system file picker lets you pick
   a destination folder. The app only writes the file(s) you explicitly export. It uses no broad
   storage permissions (`READ/WRITE_EXTERNAL_STORAGE` / `MANAGE_EXTERNAL_STORAGE`).

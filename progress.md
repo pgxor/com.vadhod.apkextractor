@@ -6,6 +6,40 @@
 
 ---
 
+## 2026-10-26 - Issue #1: pull-to-refresh, auto-refresh on resume, Uninstall button
+
+GitHub issue #1 (Dune9201) asked for swipe-to-refresh and an uninstall button.
+
+**Refresh.** `PullToRefreshBox` (Material 3, already in the BOM) wraps the list; a new
+`AppListUiState.refreshing` keeps the current list visible while it reloads, unlike the full-screen
+`loading` state. The list also refreshes itself on resume (`LifecycleResumeEffect` in `AppRoot`), but
+only when `PackageManager.getChangedPackages(seq)` reports an install/update/removal since the last
+load. `PackageRepository` snapshots the sequence number *before* each load so a change mid-load is not
+lost. Chosen over a `PACKAGE_ADDED/REMOVED` receiver: no receiver, no background reloads during Play
+Store auto-update bursts. Loads are serialized via a single `loadJob`; selections of packages that
+disappeared are pruned.
+
+**Uninstall.** Detail screen, user apps only. Fires `Intent.ACTION_DELETE` with `package:<name>`,
+which shows the system confirmation dialog. On return the resume check reloads the list and the
+detail route falls back to LIST because its app no longer exists.
+
+**New permission: `REQUEST_DELETE_PACKAGES`** (rules.md §A-5). The issue author ticked "no
+additional permission", but on Android 9+ `ACTION_DELETE` from an app targeting API 28+ is refused
+without it. It is a *normal* install-time permission, with no runtime prompt and no silent-uninstall
+capability. User chose this over the zero-permission "open App info" alternative. Recorded in
+`architecture.md` §9, README, CHANGELOG `[Unreleased]`, and both privacy policies. The F-Droid page
+will list it after the next release.
+
+**Dependency:** declared `androidx.lifecycle:lifecycle-runtime-compose` `strictly` 2.10.0. It was
+already resolved at exactly 2.10.0 transitively (via `lifecycle-viewmodel-compose`), so the classpath
+is unchanged; see `libraries-used.md`.
+
+**Verified:** `assembleDebug` + `testDebugUnitTest` green; `:app:minifyReleaseWithR8` green (run
+instead of `assembleRelease` to avoid touching the signing keystore). Merged release manifest
+permissions: `QUERY_ALL_PACKAGES`, `REQUEST_DELETE_PACKAGES`, own
+`DYNAMIC_RECEIVER_NOT_EXPORTED_PERMISSION`. No INTERNET. **Not yet verified on device** (none
+attached): pull gesture, resume refresh after install/uninstall, and the uninstall dialog.
+
 ## 2026-08-26 - v1.0.2 released to GitHub and pushed to the F-Droid MR
 
 **Released.** Tag `v1.0.2` -> commit `67d3ece813dff52dda362088f9aa16012077a6f8`. GitHub release:

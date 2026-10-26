@@ -226,6 +226,14 @@ sealed interface ExtractResult {
   networking dependencies (see `tasks.md` T-030).
 - **No runtime-dangerous permissions** beyond package visibility; storage handled entirely by SAF
   (no `READ/WRITE_EXTERNAL_STORAGE`, no `MANAGE_EXTERNAL_STORAGE`).
+- **`REQUEST_DELETE_PACKAGES`** (added 2026-10-26, GitHub issue #1): a *normal* install-time
+  permission, needed only so `Intent.ACTION_DELETE` opens the system uninstall dialog (Android 9+
+  rejects the intent from apps targeting API 28+ without it). It grants no ability to remove a
+  package silently; the user always confirms in system UI. Offered for user apps only. Rejected
+  alternative: linking to the system App-info page (zero permissions, but two taps and leaves the app).
+- **List freshness without a receiver:** on resume the list asks
+  `PackageManager.getChangedPackages(seq)` whether anything changed since the last load, so no
+  broadcast receiver and no background reloads are needed.
 - **Reproducible & locked builds:** version catalog + `strictly` + committed lockfiles
   (`libraries-used.md` §0).
 - **R8/minify** enabled for release; keep rules minimal; resource shrinking on.

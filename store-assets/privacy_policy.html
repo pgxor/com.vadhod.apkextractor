@@ -51,6 +51,9 @@ no networking code. Nothing you do in the app ever leaves your device.</p>
   <li><strong>Query all packages</strong> (<code>QUERY_ALL_PACKAGES</code>): required so the app can
   list the applications installed on your device — the core function of an APK extractor. This
   information is only shown to you, on-device, and is never recorded or sent anywhere.</li>
+  <li><strong>Request uninstall</strong> (<code>REQUEST_DELETE_PACKAGES</code>): lets the Uninstall
+  button open Android's own uninstall confirmation dialog. The app cannot remove anything by itself;
+  you always confirm in the system dialog.</li>
   <li><strong>Storage Access Framework</strong>: when you choose to export an APK, the system file
   picker lets you pick a destination folder. The app only writes the file(s) you explicitly export. It
   uses no broad storage permissions.</li>

@@ -58,6 +58,8 @@ Your backups actually reinstall.
 
 - Browse every installed app, split into **System** and **User** tabs.
 - Search, and sort by name, size, install date or last update.
+- **Pull to refresh**, and the list updates by itself when you come back after installing or
+  removing an app.
 - Extract a single app, or **select many and batch-extract** with live per-item and overall progress.
 - Save anywhere using Android's **Storage Access Framework** — no broad storage permissions.
 
@@ -125,6 +127,12 @@ The app declares exactly one sensitive permission:
 
 - **`QUERY_ALL_PACKAGES`** — required to list the apps installed on your device, which is the app's
   entire purpose. The list is shown to you on-device and is never recorded or transmitted.
+
+Plus one ordinary, install-time permission:
+
+- **`REQUEST_DELETE_PACKAGES`** — lets the **Uninstall** button on an app's detail screen open
+  Android's own "Do you want to uninstall this app?" dialog. It cannot remove anything by itself;
+  you always confirm in the system dialog.
 
 Storage is handled purely through the Storage Access Framework, so there is **no**
 `READ_EXTERNAL_STORAGE`, `WRITE_EXTERNAL_STORAGE`, or `MANAGE_EXTERNAL_STORAGE`.

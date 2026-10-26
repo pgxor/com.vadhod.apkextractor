@@ -100,6 +100,10 @@
 - ⬜ **T-065** README, LICENSE (per Q9), screenshots, F-Droid/Play metadata (no trackers).
 - ⬜ **T-066** Localization scaffolding (strings audited, no hard-coded UI text).
 
+## Post-v1 (from GitHub issues)
+- ✅ **T-070** Pull-to-refresh + auto-refresh on resume, and an Uninstall button (issue #1).
+  *Verified:* `assembleDebug` + unit tests + release R8 green; on-device check pending.
+
 ## Backlog / future (post-v1)
 - ⬜ Optional Shizuku path (only if a concrete need arises) · ⬜ Navigation3 swap-in if graph grows ·
   ⬜ APK metadata search (permissions/components) · ⬜ Export history · ⬜ Multi-module split.

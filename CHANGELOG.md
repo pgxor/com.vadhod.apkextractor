@@ -5,6 +5,24 @@ All notable changes to this project are documented here.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and this project
 adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+### Added
+
+- **Pull to refresh** on the app list ([#1](https://github.com/pgxor/com.vadhod.apkextractor/issues/1)).
+  The list also refreshes by itself when you return to the app and something was installed, updated
+  or removed meanwhile, using `PackageManager.getChangedPackages()` (no broadcast receiver, no
+  background work).
+- **Uninstall button** on the detail screen for user apps
+  ([#1](https://github.com/pgxor/com.vadhod.apkextractor/issues/1)). It opens Android's own
+  uninstall confirmation dialog via `ACTION_DELETE`.
+
+### Changed
+
+- New permission **`REQUEST_DELETE_PACKAGES`** (a normal, install-time permission) so the system
+  uninstall dialog will open; Android 9+ refuses it otherwise. It cannot uninstall anything without
+  the user confirming. Still no `INTERNET`.
+
 ## [1.0.2] — 2026-08-25
 
 Bug-fix release (`versionCode` 5) addressing every finding from the F-Droid inclusion review

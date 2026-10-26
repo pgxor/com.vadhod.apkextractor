@@ -10,11 +10,13 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.rounded.ArrowBack
+import androidx.compose.material.icons.rounded.Delete
 import androidx.compose.material.icons.rounded.Download
 import androidx.compose.material.icons.rounded.Image
 import androidx.compose.material.icons.rounded.Inventory2
 import androidx.compose.material.icons.rounded.Share
 import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FilledTonalButton
 import androidx.compose.material3.Icon
@@ -55,6 +57,7 @@ fun AppDetailScreen(
     onExtract: (AppEntry, ExportFormat?) -> Unit,
     onShare: (AppEntry) -> Unit,
     onExportIcon: (AppEntry) -> Unit,
+    onUninstall: (AppEntry) -> Unit,
 ) {
     val signing by produceState<List<String>?>(initialValue = null, app.packageName) {
         value = runCatching { container.apkInspector.signingSha256(app.packageName) }.getOrDefault(emptyList())
@@ -84,7 +87,7 @@ fun AppDetailScreen(
                 verticalArrangement = Arrangement.spacedBy(14.dp),
             ) {
                 item { HeroCard(app) }
-                item { ActionButtons(app, onExtract, onShare, onExportIcon) }
+                item { ActionButtons(app, onExtract, onShare, onExportIcon, onUninstall) }
                 item { InfoCard(app) }
                 item { SigningCard(signing) }
                 item {
@@ -148,6 +151,7 @@ private fun ActionButtons(
     onExtract: (AppEntry, ExportFormat?) -> Unit,
     onShare: (AppEntry) -> Unit,
     onExportIcon: (AppEntry) -> Unit,
+    onUninstall: (AppEntry) -> Unit,
 ) {
     Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
         Button(onClick = { onExtract(app, ExportFormat.SingleBaseApk) }, modifier = Modifier.fillMaxWidth()) {
@@ -168,6 +172,17 @@ private fun ActionButtons(
             OutlinedButton(onClick = { onExportIcon(app) }, modifier = Modifier.weight(1f)) {
                 Icon(Icons.Rounded.Image, contentDescription = null, modifier = Modifier.padding(end = 6.dp))
                 Text("Icon")
+            }
+        }
+        // System apps can't be removed without root; the system dialog would only refuse.
+        if (!app.isSystem) {
+            OutlinedButton(
+                onClick = { onUninstall(app) },
+                modifier = Modifier.fillMaxWidth(),
+                colors = ButtonDefaults.outlinedButtonColors(contentColor = MaterialTheme.colorScheme.error),
+            ) {
+                Icon(Icons.Rounded.Delete, contentDescription = null, modifier = Modifier.padding(end = 6.dp))
+                Text("Uninstall")
             }
         }
     }

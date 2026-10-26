@@ -28,6 +28,7 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
+import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -53,6 +54,7 @@ import com.vadhod.apkextractor.core.model.SortOrder
 fun AppListScreen(
     state: AppListUiState,
     onQueryChange: (String) -> Unit,
+    onRefresh: () -> Unit,
     onTabSelected: (AppTab) -> Unit,
     onSortSelected: (SortOrder) -> Unit,
     onToggleSelect: (String) -> Unit,
@@ -105,28 +107,34 @@ fun AppListScreen(
                     modifier = Modifier.padding(horizontal = 16.dp, vertical = 4.dp),
                 )
 
-                when {
-                    state.loading -> LoadingState()
-                    visible.isEmpty() -> MessageState(
-                        icon = if (state.query.isBlank()) Icons.Rounded.Apps else Icons.Rounded.SearchOff,
-                        title = if (state.query.isBlank()) "No apps here" else "No matches",
-                        subtitle = if (state.query.isBlank()) null else "Try a different search term.",
-                    )
-                    else -> LazyColumn(
-                        modifier = Modifier.fillMaxSize(),
-                        contentPadding = PaddingValues(start = 16.dp, end = 16.dp, top = 6.dp, bottom = 96.dp),
-                        verticalArrangement = Arrangement.spacedBy(10.dp),
-                    ) {
-                        items(visible, key = { it.packageName }) { app ->
-                            AppListItem(
-                                app = app,
-                                selected = app.packageName in state.selected,
-                                selectionMode = state.selectionMode,
-                                onClick = {
-                                    if (state.selectionMode) onToggleSelect(app.packageName) else onOpenApp(app)
-                                },
-                                onLongClick = { onToggleSelect(app.packageName) },
-                            )
+                PullToRefreshBox(
+                    isRefreshing = state.refreshing,
+                    onRefresh = onRefresh,
+                    modifier = Modifier.fillMaxSize(),
+                ) {
+                    when {
+                        state.loading -> LoadingState()
+                        visible.isEmpty() -> MessageState(
+                            icon = if (state.query.isBlank()) Icons.Rounded.Apps else Icons.Rounded.SearchOff,
+                            title = if (state.query.isBlank()) "No apps here" else "No matches",
+                            subtitle = if (state.query.isBlank()) null else "Try a different search term.",
+                        )
+                        else -> LazyColumn(
+                            modifier = Modifier.fillMaxSize(),
+                            contentPadding = PaddingValues(start = 16.dp, end = 16.dp, top = 6.dp, bottom = 96.dp),
+                            verticalArrangement = Arrangement.spacedBy(10.dp),
+                        ) {
+                            items(visible, key = { it.packageName }) { app ->
+                                AppListItem(
+                                    app = app,
+                                    selected = app.packageName in state.selected,
+                                    selectionMode = state.selectionMode,
+                                    onClick = {
+                                        if (state.selectionMode) onToggleSelect(app.packageName) else onOpenApp(app)
+                                    },
+                                    onLongClick = { onToggleSelect(app.packageName) },
+                                )
+                            }
                         }
                     }
                 }

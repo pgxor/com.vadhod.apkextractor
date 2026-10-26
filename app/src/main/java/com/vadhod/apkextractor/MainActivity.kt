@@ -24,6 +24,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.platform.LocalContext
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 import androidx.documentfile.provider.DocumentFile
+import androidx.lifecycle.compose.LifecycleResumeEffect
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.lifecycle.viewmodel.initializer
 import androidx.lifecycle.viewmodel.viewModelFactory
@@ -116,6 +117,13 @@ private fun AppRoot(container: AppContainer, settings: Settings) {
     )
     val state by vm.state.collectAsState()
 
+    // Coming back from the Play Store, a file manager or the uninstall dialog: pick up any apps that
+    // were installed, updated or removed meanwhile, without the user having to restart.
+    LifecycleResumeEffect(vm) {
+        vm.refreshIfPackagesChanged()
+        onPauseOrDispose { }
+    }
+
     var route by rememberSaveable { mutableStateOf(Route.LIST) }
     var detailPackage by rememberSaveable { mutableStateOf<String?>(null) }
 
@@ -170,6 +178,16 @@ private fun AppRoot(container: AppContainer, settings: Settings) {
         }
     }
 
+    fun uninstall(app: AppEntry) {
+        // Opens the system's own "uninstall this app?" dialog, so nothing is ever removed without the
+        // user confirming there. Needs REQUEST_DELETE_PACKAGES (see the manifest) on Android 9+.
+        runCatching {
+            context.startActivity(Intent(Intent.ACTION_DELETE, Uri.fromParts("package", app.packageName, null)))
+        }.onFailure {
+            Toast.makeText(context, "Couldn't open the uninstaller", Toast.LENGTH_SHORT).show()
+        }
+    }
+
     BackHandler(enabled = route != Route.LIST || state.selectionMode) {
         when {
             state.selectionMode -> vm.clearSelection()
@@ -210,6 +228,7 @@ private fun AppRoot(container: AppContainer, settings: Settings) {
                     onExtract = { a, fmt -> ensureFolderAndExtract(listOf(a), fmt) },
                     onShare = { shareApk(it) },
                     onExportIcon = { a -> pendingIconApp = a; iconPicker.launch(Exporters.iconFileName(a)) },
+                    onUninstall = { uninstall(it) },
                 )
             }
         }
@@ -217,6 +236,7 @@ private fun AppRoot(container: AppContainer, settings: Settings) {
         Route.LIST -> AppListScreen(
             state = state,
             onQueryChange = vm::onQueryChange,
+            onRefresh = vm::refresh,
             onTabSelected = vm::onTabSelected,
             onSortSelected = vm::onSortSelected,
             onToggleSelect = vm::toggleSelection,

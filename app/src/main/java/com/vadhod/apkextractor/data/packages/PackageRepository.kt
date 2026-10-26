@@ -13,7 +13,14 @@ class PackageRepository(private val source: PackageManagerSource) {
         val system: List<AppEntry>,
     )
 
+    /** Change sequence the current list reflects; read *before* loading so a change mid-load still counts. */
+    @Volatile private var loadedSequence = 0
+
+    /** True when an app was installed, updated or removed since the last [getPartitioned]. */
+    suspend fun hasChangedSinceLastLoad(): Boolean = source.changeSequence(loadedSequence) != loadedSequence
+
     suspend fun getPartitioned(): Partitioned {
+        loadedSequence = source.changeSequence(loadedSequence)
         val all = source.loadAll()
         return Partitioned(
             user = all.filterNot { it.isSystem },

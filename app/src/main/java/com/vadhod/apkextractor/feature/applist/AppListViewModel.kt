@@ -11,6 +11,7 @@ import com.vadhod.apkextractor.core.model.SortOrder
 import com.vadhod.apkextractor.core.model.sortedByOrder
 import com.vadhod.apkextractor.core.util.AppResult
 import com.vadhod.apkextractor.data.extract.SafApkSink
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -35,6 +36,8 @@ data class ExtractionUiState(
 
 data class AppListUiState(
     val loading: Boolean = true,
+    /** A pull-to-refresh is in flight (the existing list stays visible, unlike [loading]). */
+    val refreshing: Boolean = false,
     val query: String = "",
     val sortOrder: SortOrder = SortOrder.NAME_ASC,
     val tab: AppTab = AppTab.USER,
@@ -66,6 +69,7 @@ class AppListViewModel(
     val state: StateFlow<AppListUiState> = _state.asStateFlow()
 
     @Volatile private var bundleSplitsByDefault = true
+    private var loadJob: Job? = null
 
     init {
         viewModelScope.launch {
@@ -74,18 +78,36 @@ class AppListViewModel(
                 _state.update { it.copy(sortOrder = s.sortOrder) }
             }
         }
-        refresh()
+        load()
     }
 
+    /** Pull-to-refresh: re-reads the app list while the current one stays on screen. */
     fun refresh() {
-        _state.update { it.copy(loading = true) }
+        _state.update { it.copy(refreshing = true) }
+        load()
+    }
+
+    /** On resume: silently reloads only if an app was installed, updated or removed meanwhile. */
+    fun refreshIfPackagesChanged() {
+        if (loadJob?.isActive == true) return
         viewModelScope.launch {
+            if (container.packageRepository.hasChangedSinceLastLoad()) load()
+        }
+    }
+
+    private fun load() {
+        loadJob?.cancel()
+        loadJob = viewModelScope.launch {
             val partitioned = container.packageRepository.getPartitioned()
             _state.update {
+                val installed = (partitioned.user + partitioned.system).mapTo(HashSet()) { app -> app.packageName }
                 it.copy(
                     loading = false,
+                    refreshing = false,
                     userApps = partitioned.user,
                     systemApps = partitioned.system,
+                    // Drop selections for apps that were uninstalled since.
+                    selected = it.selected.filterTo(HashSet()) { pkg -> pkg in installed },
                 )
             }
         }

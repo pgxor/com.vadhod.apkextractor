@@ -22,6 +22,15 @@ class PackageManagerSource(
         packageManager.getInstalledPackages(0).mapNotNull { it.toAppEntry() }
     }
 
+    /**
+     * The system's package-change sequence number, or [since] itself when nothing was installed,
+     * updated or removed after [since]. Lets the list reload only when it is actually stale, with
+     * no broadcast receiver and no extra permission.
+     */
+    suspend fun changeSequence(since: Int): Int = withContext(dispatchers.io) {
+        packageManager.getChangedPackages(since)?.sequenceNumber ?: since
+    }
+
     private fun PackageInfo.toAppEntry(): AppEntry? {
         val ai = applicationInfo ?: return null
         val base = ai.sourceDir ?: return null
